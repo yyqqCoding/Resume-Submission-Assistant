@@ -2,9 +2,9 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import type { ApplicationStatus } from '@/types'
+import { ALL_STATUSES, type ApplicationStatus } from '@/types'
 
-export type CreateApplicationResult = {
+export type ActionResult = {
   error: string | null
 }
 
@@ -17,9 +17,13 @@ function isValidHttpUrl(value: string) {
   }
 }
 
+function isValidApplicationStatus(value: string): value is ApplicationStatus {
+  return ALL_STATUSES.includes(value as ApplicationStatus)
+}
+
 export async function createApplication(
   formData: FormData,
-): Promise<CreateApplicationResult> {
+): Promise<ActionResult> {
   const supabase = await createClient()
   const {
     data: { user },
@@ -66,6 +70,37 @@ export async function createApplication(
 
   if (error) {
     return { error: '保存失败，请重试' }
+  }
+
+  return { error: null }
+}
+
+export async function updateApplicationStatus(
+  id: string,
+  newStatus: string,
+): Promise<ActionResult> {
+  if (!isValidApplicationStatus(newStatus)) {
+    return { error: '无效的投递状态' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect('/login')
+  }
+
+  const { error } = await supabase
+    .from('applications')
+    .update({ status: newStatus })
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) {
+    return { error: '更新失败，请重试' }
   }
 
   return { error: null }

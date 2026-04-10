@@ -8,6 +8,7 @@ export const ALL_STATUSES = [
 ] as const
 
 export type ApplicationStatus = (typeof ALL_STATUSES)[number]
+export type ApplicationStatusFilter = ApplicationStatus | 'all'
 
 export const STATUS_LABEL: Record<ApplicationStatus, string> = {
   applied: '已投递',
