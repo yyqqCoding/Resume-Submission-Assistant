@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import SignOutButton from './sign-out-button'
@@ -19,16 +20,26 @@ export default async function ApplicationsPage() {
         <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.2fr_0.8fr] lg:p-10">
           <div className="space-y-6">
             <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.28em] text-slate-400">
-                Protected Area
-              </p>
-              <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-                登录成功，Step 1 已跑通
-              </h1>
-              <p className="max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                这里暂时是受保护的占位页。下一步会在这个区域接上新增投递表单、
-                投递列表和状态流转。
-              </p>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="space-y-3">
+                  <p className="text-sm uppercase tracking-[0.28em] text-slate-400">
+                    Protected Area
+                  </p>
+                  <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
+                    登录成功，新增投递入口已接入
+                  </h1>
+                  <p className="max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
+                    第 2 步先把新增投递记录闭环跑通。列表展示和状态流转会在下一步补齐。
+                  </p>
+                </div>
+
+                <Link
+                  href="/applications/new"
+                  className="inline-flex items-center rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
+                >
+                  + 新增
+                </Link>
+              </div>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">
@@ -51,7 +62,7 @@ export default async function ApplicationsPage() {
               <ul className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
                 <li>1. 新增投递记录表单</li>
                 <li>2. 本地解析招聘链接中的公司名</li>
-                <li>3. 写入 applications 和 application_events</li>
+                <li>3. 写入 applications，时间线由数据库 trigger 自动补齐</li>
               </ul>
             </div>
           </div>
