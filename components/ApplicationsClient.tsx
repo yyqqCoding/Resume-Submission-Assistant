@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { startTransition, useEffect, useState } from 'react'
+import { cn } from '@/lib/utils'
 import type {
   Application,
   ApplicationStatus,
@@ -14,6 +15,8 @@ import StatusFilter from './StatusFilter'
 type Props = {
   applications: Application[]
 }
+
+const STACK_TOP_OFFSET_REM = 1.05
 
 export default function ApplicationsClient({ applications }: Props) {
   const router = useRouter()
@@ -92,28 +95,48 @@ export default function ApplicationsClient({ applications }: Props) {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {filteredApplications.map((application) => (
-            <ApplicationCard
-              key={application.id}
-              app={application}
-              onStatusUpdated={(nextStatus: ApplicationStatus) => {
-                setItems((current) =>
-                  current.map((item) =>
-                    item.id === application.id
-                      ? {
-                          ...item,
-                          status: nextStatus,
-                        }
-                      : item,
-                  ),
-                )
-                startTransition(() => {
-                  router.refresh()
-                })
-              }}
-            />
-          ))}
+        <div
+          role="region"
+          aria-label="投递记录列表"
+          className="rounded-[1.75rem] border border-slate-200/70 bg-white/45 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm lg:max-h-[min(66vh,48rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-3 lg:pr-2"
+        >
+          <div className="space-y-4 lg:space-y-0 lg:pb-6">
+            {filteredApplications.map((application, index) => (
+              <div
+                key={application.id}
+                data-testid="stacked-card-shell"
+                data-stack-index={index}
+                className={cn(
+                  'relative',
+                  'lg:sticky',
+                  index === 0 ? 'lg:mt-0' : 'lg:-mt-14',
+                )}
+                style={{
+                  top: `${1 + index * STACK_TOP_OFFSET_REM}rem`,
+                  zIndex: index + 1,
+                }}
+              >
+                <ApplicationCard
+                  app={application}
+                  onStatusUpdated={(nextStatus: ApplicationStatus) => {
+                    setItems((current) =>
+                      current.map((item) =>
+                        item.id === application.id
+                          ? {
+                              ...item,
+                              status: nextStatus,
+                            }
+                          : item,
+                      ),
+                    )
+                    startTransition(() => {
+                      router.refresh()
+                    })
+                  }}
+                />
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>
