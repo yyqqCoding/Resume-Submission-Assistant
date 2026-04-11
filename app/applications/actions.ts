@@ -19,6 +19,10 @@ export type ApplicationDetailResult = {
   error: string | null
 }
 
+type ApplicationWithEvents = Application & {
+  application_events?: ApplicationEvent[] | null
+}
+
 function isValidHttpUrl(value: string) {
   try {
     const url = new URL(value)
@@ -132,7 +136,7 @@ export async function getApplicationDetail(
 
   const { data: application, error: applicationError } = await supabase
     .from('applications')
-    .select('*')
+    .select('*, application_events(*)')
     .eq('id', id)
     .eq('user_id', user.id)
     .maybeSingle()
@@ -145,23 +149,19 @@ export async function getApplicationDetail(
     return { application: null, events: [], error: null }
   }
 
-  const { data: events, error: eventsError } = await supabase
-    .from('application_events')
-    .select('*')
-    .eq('application_id', id)
-    .order('happened_at', { ascending: false })
+  const { application_events: rawEvents, ...applicationFields } =
+    application as ApplicationWithEvents
 
-  if (eventsError) {
-    return {
-      application: application as Application,
-      events: [],
-      error: '读取时间线失败，请刷新重试',
-    }
-  }
+  const events = [...(rawEvents ?? [])].sort((left, right) => {
+    return (
+      new Date(right.happened_at).getTime() -
+      new Date(left.happened_at).getTime()
+    )
+  })
 
   return {
-    application: application as Application,
-    events: ((events ?? []) as ApplicationEvent[]),
+    application: applicationFields as Application,
+    events,
     error: null,
   }
 }
