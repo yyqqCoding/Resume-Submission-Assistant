@@ -1,6 +1,9 @@
+import { getSiteUrl } from '@/lib/env'
 import LoginForm from './LoginForm'
 
 export default function LoginPage() {
+  const siteUrl = getSiteUrl()
+
   return (
     <main className="flex min-h-screen items-center justify-center px-4 py-10">
       <section className="w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/60 bg-[rgba(255,255,255,0.5)] shadow-[0_30px_120px_rgba(15,23,42,0.08)] backdrop-blur">
@@ -49,7 +52,7 @@ export default function LoginPage() {
                   首次注册后，需要先完成邮箱验证，再使用密码登录进入应用。
                 </p>
               </div>
-              <LoginForm />
+              <LoginForm siteUrl={siteUrl} />
             </div>
           </div>
         </div>

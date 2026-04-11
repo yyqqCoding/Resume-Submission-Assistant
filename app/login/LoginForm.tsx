@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { getSiteUrl } from '@/lib/env'
 import { createClient } from '@/lib/supabase/client'
 
 type AuthResult = {
@@ -28,6 +27,7 @@ type AuthClient = {
 }
 
 type LoginFormProps = {
+  siteUrl: string
   clientFactory?: () => AuthClient
   navigate?: (href: string) => void
 }
@@ -40,6 +40,7 @@ type MessageState = {
 const SIGN_UP_SUCCESS_MESSAGE = '注册成功，请查收验证邮件'
 
 export default function LoginForm({
+  siteUrl,
   clientFactory = createClient,
   navigate,
 }: LoginFormProps) {
@@ -79,7 +80,6 @@ export default function LoginForm({
       const supabase = clientFactory()
 
       if (isSignUp) {
-        const siteUrl = getSiteUrl()
         const { error } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
