@@ -27,7 +27,7 @@ export default async function ApplicationsPage() {
 
   return (
     <main className="min-h-screen px-4 py-10">
-      <section className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] border border-slate-200/70 bg-white/80 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur">
+      <section className="mx-auto max-w-6xl overflow-visible rounded-[2rem] border border-slate-200/70 bg-white/80 shadow-[0_24px_70px_rgba(15,23,42,0.08)] backdrop-blur">
         <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-[1.15fr_0.85fr] lg:p-10">
           <div className="space-y-6">
             <div className="flex flex-wrap items-start justify-between gap-4">

@@ -1,7 +1,9 @@
 'use client'
 
-import { useState } from 'react'
+import Link from 'next/link'
+import { useRef, useState } from 'react'
 import { updateApplicationStatus } from '@/app/applications/actions'
+import { getStatusMenuSide } from '@/lib/status-menu-side'
 import { ALL_STATUSES, STATUS_LABEL, type Application } from '@/types'
 import StatusBadge from './StatusBadge'
 
@@ -21,9 +23,29 @@ function formatAppliedAt(value: string) {
 }
 
 export default function ApplicationCard({ app, onStatusUpdated }: Props) {
+  const triggerRef = useRef<HTMLButtonElement | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuSide, setMenuSide] = useState<'top' | 'bottom'>('bottom')
   const [isUpdating, setIsUpdating] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  function handleMenuToggle() {
+    if (menuOpen) {
+      setMenuOpen(false)
+      return
+    }
+
+    if (triggerRef.current) {
+      setMenuSide(
+        getStatusMenuSide(
+          triggerRef.current.getBoundingClientRect(),
+          window.innerHeight,
+        ),
+      )
+    }
+
+    setMenuOpen(true)
+  }
 
   async function handleStatusChange(nextStatus: string) {
     if (nextStatus === app.status) {
@@ -75,11 +97,12 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
       <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
         <div className="relative">
           <button
+            ref={triggerRef}
             type="button"
             aria-expanded={menuOpen}
             aria-haspopup="menu"
             disabled={isUpdating}
-            onClick={() => setMenuOpen((value) => !value)}
+            onClick={handleMenuToggle}
             className="text-sm font-medium text-emerald-800 transition hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isUpdating ? '更新中...' : '更新状态'}
@@ -88,7 +111,10 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
           {menuOpen ? (
             <div
               role="menu"
-              className="absolute left-0 top-10 z-10 min-w-40 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg"
+              data-side={menuSide}
+              className={`absolute left-0 z-10 min-w-40 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg ${
+                menuSide === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
+              }`}
             >
               {ALL_STATUSES.map((status) => {
                 const isCurrent = status === app.status
@@ -115,7 +141,12 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
           ) : null}
         </div>
 
-        <span className="text-xs text-slate-400">详情页第 4 步接入</span>
+        <Link
+          href={`/applications/${app.id}`}
+          className="text-xs font-medium text-slate-500 transition hover:text-emerald-700"
+        >
+          查看详情
+        </Link>
       </div>
     </article>
   )

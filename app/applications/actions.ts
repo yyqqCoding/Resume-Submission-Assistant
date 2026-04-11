@@ -2,9 +2,20 @@
 
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { ALL_STATUSES, type ApplicationStatus } from '@/types'
+import {
+  ALL_STATUSES,
+  type Application,
+  type ApplicationEvent,
+  type ApplicationStatus,
+} from '@/types'
 
 export type ActionResult = {
+  error: string | null
+}
+
+export type ApplicationDetailResult = {
+  application: Application | null
+  events: ApplicationEvent[]
   error: string | null
 }
 
@@ -101,6 +112,139 @@ export async function updateApplicationStatus(
 
   if (error) {
     return { error: '更新失败，请重试' }
+  }
+
+  return { error: null }
+}
+
+export async function getApplicationDetail(
+  id: string,
+): Promise<ApplicationDetailResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect('/login')
+  }
+
+  const { data: application, error: applicationError } = await supabase
+    .from('applications')
+    .select('*')
+    .eq('id', id)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (applicationError) {
+    return { application: null, events: [], error: '读取失败，请刷新重试' }
+  }
+
+  if (!application) {
+    return { application: null, events: [], error: null }
+  }
+
+  const { data: events, error: eventsError } = await supabase
+    .from('application_events')
+    .select('*')
+    .eq('application_id', id)
+    .order('happened_at', { ascending: false })
+
+  if (eventsError) {
+    return {
+      application: application as Application,
+      events: [],
+      error: '读取时间线失败，请刷新重试',
+    }
+  }
+
+  return {
+    application: application as Application,
+    events: ((events ?? []) as ApplicationEvent[]),
+    error: null,
+  }
+}
+
+export async function updateLatestEventRemark(
+  applicationId: string,
+  remark: string,
+): Promise<ActionResult> {
+  const trimmedRemark = remark.trim()
+
+  if (!trimmedRemark) {
+    return { error: '请填写备注内容' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect('/login')
+  }
+
+  const { data: application, error: applicationError } = await supabase
+    .from('applications')
+    .select('id')
+    .eq('id', applicationId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (applicationError || !application) {
+    return { error: '未找到这条投递记录' }
+  }
+
+  const { data: latestEvents, error: latestEventError } = await supabase
+    .from('application_events')
+    .select('id')
+    .eq('application_id', applicationId)
+    .order('happened_at', { ascending: false })
+    .limit(1)
+
+  if (latestEventError) {
+    return { error: '读取时间线失败，请重试' }
+  }
+
+  const latestEvent = latestEvents?.[0]
+
+  if (!latestEvent) {
+    return { error: '暂无可更新的时间线事件' }
+  }
+
+  const { error } = await supabase
+    .from('application_events')
+    .update({ remark: trimmedRemark })
+    .eq('id', latestEvent.id)
+
+  if (error) {
+    return { error: '备注更新失败，请重试' }
+  }
+
+  return { error: null }
+}
+
+export async function deleteApplication(id: string): Promise<ActionResult> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect('/login')
+  }
+
+  const { error } = await supabase
+    .from('applications')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', user.id)
+
+  if (error) {
+    return { error: '删除失败，请重试' }
   }
 
   return { error: null }
