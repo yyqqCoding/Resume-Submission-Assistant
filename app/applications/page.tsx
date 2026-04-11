@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { CirclePlus } from 'lucide-react'
 import { redirect } from 'next/navigation'
 import ApplicationsClient from '@/components/ApplicationsClient'
+import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
 import type { Application } from '@/types'
 import SignOutButton from './sign-out-button'
@@ -40,12 +42,16 @@ export default async function ApplicationsPage() {
                 </p>
               </div>
 
-              <Link
-                href="/applications/new"
-                className="inline-flex items-center rounded-2xl bg-emerald-700 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-600"
+              <Button
+                asChild
+                size="lg"
+                className="rounded-2xl px-5 shadow-[0_18px_45px_rgba(20,83,45,0.2)]"
               >
-                + 新增
-              </Link>
+                <Link href="/applications/new">
+                  <CirclePlus className="size-4" />
+                  新增投递
+                </Link>
+              </Button>
             </div>
 
             <ApplicationsClient applications={applications} />

@@ -23,6 +23,9 @@ export default function ApplicationsClient({ applications }: Props) {
   const [items, setItems] = useState(applications)
   const [currentFilter, setCurrentFilter] =
     useState<ApplicationStatusFilter>('all')
+  const [activeId, setActiveId] = useState<string | null>(
+    applications[0]?.id ?? null,
+  )
 
   useEffect(() => {
     setItems(applications)
@@ -32,6 +35,17 @@ export default function ApplicationsClient({ applications }: Props) {
     currentFilter === 'all'
       ? items
       : items.filter((application) => application.status === currentFilter)
+
+  useEffect(() => {
+    if (!filteredApplications.length) {
+      setActiveId(null)
+      return
+    }
+
+    if (!activeId || !filteredApplications.some((item) => item.id === activeId)) {
+      setActiveId(filteredApplications[0].id)
+    }
+  }, [activeId, filteredApplications])
 
   const offerCount = items.filter(
     (application) => application.status === 'offer',
@@ -98,7 +112,7 @@ export default function ApplicationsClient({ applications }: Props) {
         <div
           role="region"
           aria-label="投递记录列表"
-          className="rounded-[1.75rem] border border-slate-200/70 bg-white/45 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm lg:max-h-[min(66vh,48rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-3 lg:pr-2"
+          className="scrollbar-hidden rounded-[1.75rem] border border-slate-200/70 bg-white/45 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm lg:max-h-[min(66vh,48rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-3 lg:pr-2"
         >
           <div className="space-y-4 lg:space-y-0 lg:pb-6">
             {filteredApplications.map((application, index) => (
@@ -106,14 +120,23 @@ export default function ApplicationsClient({ applications }: Props) {
                 key={application.id}
                 data-testid="stacked-card-shell"
                 data-stack-index={index}
+                data-stack-active={application.id === activeId}
+                onClick={() => setActiveId(application.id)}
+                onFocusCapture={() => setActiveId(application.id)}
                 className={cn(
-                  'relative',
+                  'relative transition-[transform,filter,opacity,box-shadow] duration-200',
                   'lg:sticky',
                   index === 0 ? 'lg:mt-0' : 'lg:-mt-14',
+                  application.id === activeId
+                    ? 'lg:-translate-y-1 lg:scale-[1.01]'
+                    : 'lg:opacity-90',
                 )}
                 style={{
                   top: `${1 + index * STACK_TOP_OFFSET_REM}rem`,
-                  zIndex: index + 1,
+                  zIndex:
+                    application.id === activeId
+                      ? filteredApplications.length + 20
+                      : filteredApplications.length - index,
                 }}
               >
                 <ApplicationCard
