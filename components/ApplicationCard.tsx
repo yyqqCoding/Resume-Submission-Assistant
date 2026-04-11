@@ -3,7 +3,15 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
+import { toast } from 'sonner'
 import { updateApplicationStatus } from '@/app/applications/actions'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { getStatusMenuSide } from '@/lib/status-menu-side'
 import {
   ALL_STATUSES,
@@ -37,13 +45,8 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
   const [isUpdating, setIsUpdating] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
-  function handleMenuToggle() {
-    if (menuOpen) {
-      setMenuOpen(false)
-      return
-    }
-
-    if (triggerRef.current) {
+  function handleMenuChange(nextOpen: boolean) {
+    if (nextOpen && triggerRef.current) {
       setMenuSide(
         getStatusMenuSide(
           triggerRef.current.getBoundingClientRect(),
@@ -52,7 +55,7 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
       )
     }
 
-    setMenuOpen(true)
+    setMenuOpen(nextOpen)
   }
 
   async function handleStatusChange(nextStatus: ApplicationStatus) {
@@ -70,11 +73,13 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
     if (result.error) {
       setErrorMessage(result.error)
       setIsUpdating(false)
+      toast.error(result.error)
       return
     }
 
     setIsUpdating(false)
     await onStatusUpdated(nextStatus)
+    toast.success(`状态已更新为${STATUS_LABEL[nextStatus]}`)
   }
 
   function prefetchDetail() {
@@ -106,57 +111,49 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
       </div>
 
       {errorMessage ? (
-        <p className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">
+        <p
+          role="alert"
+          aria-live="assertive"
+          className="mt-4 rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
           {errorMessage}
         </p>
       ) : null}
 
       <div className="mt-4 flex items-center justify-between border-t border-slate-200 pt-4">
-        <div className="relative">
-          <button
-            ref={triggerRef}
-            type="button"
-            aria-expanded={menuOpen}
-            aria-haspopup="menu"
-            disabled={isUpdating}
-            onClick={handleMenuToggle}
-            className="text-sm font-medium text-emerald-800 transition hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isUpdating ? '更新中...' : '更新状态'}
-          </button>
-
-          {menuOpen ? (
-            <div
-              role="menu"
-              data-side={menuSide}
-              className={`absolute left-0 z-10 min-w-40 rounded-2xl border border-slate-200 bg-white p-2 shadow-lg ${
-                menuSide === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
-              }`}
+        <DropdownMenu open={menuOpen} onOpenChange={handleMenuChange}>
+          <DropdownMenuTrigger asChild>
+            <Button
+              ref={triggerRef}
+              type="button"
+              variant="ghost"
+              size="sm"
+              disabled={isUpdating}
+              className="h-auto rounded-none px-0 text-emerald-800 hover:bg-transparent hover:text-emerald-700"
             >
-              {ALL_STATUSES.map((status) => {
-                const isCurrent = status === app.status
+              {isUpdating ? '更新中...' : '更新状态'}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side={menuSide} align="start">
+            {ALL_STATUSES.map((status) => {
+              const isCurrent = status === app.status
 
-                return (
-                  <button
-                    key={status}
-                    type="button"
-                    disabled={isUpdating || isCurrent}
-                    onClick={() => handleStatusChange(status)}
-                    className={`block w-full rounded-xl px-3 py-2 text-left text-sm transition ${
-                      isCurrent
-                        ? 'cursor-not-allowed bg-slate-100 text-slate-400'
-                        : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-800'
-                    }`}
-                  >
-                    {isCurrent
-                      ? `${STATUS_LABEL[status]}（当前）`
-                      : STATUS_LABEL[status]}
-                  </button>
-                )
-              })}
-            </div>
-          ) : null}
-        </div>
+              return (
+                <DropdownMenuItem
+                  key={status}
+                  disabled={isUpdating || isCurrent}
+                  onSelect={() => {
+                    void handleStatusChange(status)
+                  }}
+                >
+                  {isCurrent
+                    ? `${STATUS_LABEL[status]}（当前）`
+                    : STATUS_LABEL[status]}
+                </DropdownMenuItem>
+              )
+            })}
+          </DropdownMenuContent>
+        </DropdownMenu>
 
         <Link
           href={`/applications/${app.id}`}

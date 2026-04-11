@@ -25,7 +25,7 @@ function renderEmptyState() {
   return (
     <main className="min-h-screen bg-[var(--page-bg)] px-6 py-10 text-slate-900">
       <div className="mx-auto max-w-3xl rounded-[2rem] border border-slate-200/70 bg-[var(--card)] p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-        <p className="text-sm font-medium text-emerald-700">Application Detail</p>
+        <p className="text-sm font-medium text-emerald-700">投递详情</p>
         <h1 className="mt-3 text-2xl font-semibold">未找到这条投递记录</h1>
         <p className="mt-3 text-sm leading-6 text-slate-600">
           这条投递可能已被删除，或不属于当前登录用户。
@@ -61,7 +61,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
         </div>
 
         <section className="rounded-[2rem] border border-slate-200/70 bg-[var(--card)] p-8 shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-          <p className="text-sm font-medium text-emerald-700">Application Detail</p>
+          <p className="text-sm font-medium text-emerald-700">投递详情</p>
           <h1 className="mt-3 text-3xl font-semibold text-slate-950">
             {application.company_name ?? '未命名公司'}
           </h1>

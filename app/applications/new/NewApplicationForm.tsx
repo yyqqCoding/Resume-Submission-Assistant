@@ -2,6 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { parseCompanyFromUrl } from '@/lib/parser/hostname'
 
 export type CreateApplicationResult = {
@@ -87,16 +91,16 @@ export default function NewApplicationForm({ submitAction }: NewApplicationFormP
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="source_url">
+        <Label className="mb-1.5 block" htmlFor="source_url">
           投递链接
-        </label>
-        <input
+        </Label>
+        <Input
           id="source_url"
           type="url"
           placeholder="粘贴招聘页链接，自动识别公司"
           value={url}
           onChange={(event) => handleUrlChange(event.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-700"
+          className="w-full"
         />
         <p className="mt-2 text-xs leading-5 text-slate-400">
           支持常见招聘域名自动识别，未收录链接会回退为主域名。
@@ -104,71 +108,77 @@ export default function NewApplicationForm({ submitAction }: NewApplicationFormP
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="company_name">
+        <Label className="mb-1.5 block" htmlFor="company_name">
           公司名
-        </label>
-        <input
+        </Label>
+        <Input
           id="company_name"
           type="text"
           placeholder="自动识别，也可手动修改"
           value={company}
           onChange={(event) => setCompany(event.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-700"
+          className="w-full"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="job_title">
+        <Label className="mb-1.5 block" htmlFor="job_title">
           岗位名
-        </label>
-        <input
+        </Label>
+        <Input
           id="job_title"
           type="text"
           placeholder="例如：前端工程师、产品经理"
           value={jobTitle}
           onChange={(event) => setJobTitle(event.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-700"
+          className="w-full"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="applied_at">
+        <Label className="mb-1.5 block" htmlFor="applied_at">
           投递日期
-        </label>
-        <input
+        </Label>
+        <Input
           id="applied_at"
           type="date"
           value={appliedAt}
           onChange={(event) => setAppliedAt(event.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-700"
+          className="w-full"
         />
       </div>
 
       <div>
-        <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="note">
+        <Label className="mb-1.5 block" htmlFor="note">
           备注
-        </label>
-        <textarea
+        </Label>
+        <Textarea
           id="note"
           placeholder="选填，例如：内推、社招..."
           value={note}
           onChange={(event) => setNote(event.target.value)}
           rows={4}
-          className="w-full resize-none rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-700"
+          className="w-full resize-none"
         />
       </div>
 
       {errorMessage ? (
-        <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-600">{errorMessage}</p>
+        <p
+          role="alert"
+          aria-live="assertive"
+          className="rounded-[calc(var(--radius)+2px)] bg-red-50 px-4 py-3 text-sm text-red-600"
+        >
+          {errorMessage}
+        </p>
       ) : null}
 
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-2xl bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full"
       >
         {isSubmitting ? '保存中...' : '保存投递记录'}
-      </button>
+      </Button>
     </form>
   )
 }

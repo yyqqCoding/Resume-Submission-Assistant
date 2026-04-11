@@ -32,15 +32,11 @@ export default async function ApplicationsPage() {
           <div className="space-y-6">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="space-y-3">
-                <p className="text-sm uppercase tracking-[0.28em] text-slate-400">
-                  Step 3
-                </p>
                 <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-                  投递列表与状态流转
+                  投递总览
                 </h1>
                 <p className="max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                  首屏列表由服务端读取，状态筛选和卡片菜单由客户端处理，时间线事件仍由
-                  Supabase trigger 自动维护。
+                  集中查看当前投递、阶段变化和待跟进机会，把节奏和优先级掌握在自己手里。
                 </p>
               </div>
 
@@ -58,7 +54,7 @@ export default async function ApplicationsPage() {
           <aside className="rounded-[1.75rem] border border-slate-200 bg-[linear-gradient(180deg,#fff,#f8fafc)] p-6">
             <div className="space-y-4">
               <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-                Session
+                工作台
               </p>
 
               <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
@@ -69,18 +65,18 @@ export default async function ApplicationsPage() {
               </div>
 
               <div className="rounded-3xl border border-emerald-200 bg-emerald-50 p-5">
-                <p className="text-sm font-medium text-emerald-900">当前阶段</p>
+                <p className="text-sm font-medium text-emerald-900">跟进建议</p>
                 <p className="mt-3 text-sm leading-6 text-emerald-800">
-                  列表页已接入，状态变化会自动沉淀到 application_events 时间线。
+                  收到新进展后及时更新状态和备注，后续回看会更清晰。
                 </p>
               </div>
 
               <div className="rounded-3xl border border-slate-200 bg-white p-5">
-                <p className="text-sm font-medium text-slate-900">数据库约束</p>
+                <p className="text-sm font-medium text-slate-900">今日节奏</p>
                 <ul className="mt-3 space-y-3 text-sm leading-6 text-slate-600">
-                  <li>1. `updated_at` 由 trigger 自动更新</li>
-                  <li>2. 新增投递自动写入初始事件</li>
-                  <li>3. 状态变化自动追加时间线事件</li>
+                  <li>1. 先筛选需要优先跟进的记录</li>
+                  <li>2. 在详情页补充最新反馈与备注</li>
+                  <li>3. 新机会随时补录，保持记录完整</li>
                 </ul>
               </div>
 

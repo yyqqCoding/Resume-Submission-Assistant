@@ -42,7 +42,7 @@ export default function ApplicationsClient({ applications }: Props) {
       <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white/70 px-6 py-10 text-center">
         <p className="text-lg font-semibold text-slate-900">还没有投递记录</p>
         <p className="mt-3 text-sm leading-6 text-slate-500">
-          从第 2 步新增页录入第一条投递记录后，这里会展示完整列表和状态流转。
+          从“新增投递”开始建立第一条记录后，这里会持续汇总你的进展。
         </p>
         <Link
           href="/applications/new"
@@ -58,9 +58,7 @@ export default function ApplicationsClient({ applications }: Props) {
     <div className="space-y-6">
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
-            Total
-          </p>
+          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">总投递</p>
           <p className="mt-2 text-3xl font-semibold text-slate-900">
             {items.length}
           </p>
@@ -68,9 +66,7 @@ export default function ApplicationsClient({ applications }: Props) {
         </div>
 
         <div className="rounded-[1.5rem] border border-emerald-200 bg-emerald-50 p-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-emerald-700/70">
-            Offer
-          </p>
+          <p className="text-xs uppercase tracking-[0.24em] text-emerald-700/70">Offer</p>
           <p className="mt-2 text-3xl font-semibold text-emerald-800">
             {offerCount}
           </p>
@@ -78,9 +74,7 @@ export default function ApplicationsClient({ applications }: Props) {
         </div>
 
         <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
-          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
-            Rejected
-          </p>
+          <p className="text-xs uppercase tracking-[0.24em] text-slate-400">已拒</p>
           <p className="mt-2 text-3xl font-semibold text-slate-700">
             {rejectedCount}
           </p>

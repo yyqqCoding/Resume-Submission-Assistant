@@ -1,3 +1,5 @@
+import { Skeleton } from '@/components/ui/skeleton'
+
 export default function ApplicationsLoading() {
   return (
     <main className="min-h-screen px-4 py-10">
@@ -9,7 +11,7 @@ export default function ApplicationsLoading() {
           <div className="space-y-6">
             <div className="space-y-3">
               <p className="text-sm uppercase tracking-[0.28em] text-slate-400">
-                Step 3
+                投递总览
               </p>
               <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
                 正在加载投递列表
@@ -17,22 +19,22 @@ export default function ApplicationsLoading() {
             </div>
 
             <div className="grid gap-4 sm:grid-cols-3">
-              <div className="h-28 animate-pulse rounded-[1.5rem] bg-slate-100" />
-              <div className="h-28 animate-pulse rounded-[1.5rem] bg-slate-100" />
-              <div className="h-28 animate-pulse rounded-[1.5rem] bg-slate-100" />
+              <Skeleton className="h-28 rounded-[1.5rem]" />
+              <Skeleton className="h-28 rounded-[1.5rem]" />
+              <Skeleton className="h-28 rounded-[1.5rem]" />
             </div>
 
             <div className="space-y-4">
-              <div className="h-40 animate-pulse rounded-[1.75rem] bg-slate-100" />
-              <div className="h-40 animate-pulse rounded-[1.75rem] bg-slate-100" />
+              <Skeleton className="h-40 rounded-[1.75rem]" />
+              <Skeleton className="h-40 rounded-[1.75rem]" />
             </div>
           </div>
 
           <aside className="rounded-[1.75rem] border border-slate-200 bg-[linear-gradient(180deg,#fff,#f8fafc)] p-6">
             <div className="space-y-4">
-              <div className="h-24 animate-pulse rounded-3xl bg-slate-100" />
-              <div className="h-32 animate-pulse rounded-3xl bg-slate-100" />
-              <div className="h-44 animate-pulse rounded-3xl bg-slate-100" />
+              <Skeleton className="h-24 rounded-3xl" />
+              <Skeleton className="h-32 rounded-3xl" />
+              <Skeleton className="h-44 rounded-3xl" />
             </div>
           </aside>
         </div>

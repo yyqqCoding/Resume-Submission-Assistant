@@ -16,15 +16,11 @@ export default function NewApplicationPage() {
             </Link>
 
             <div className="space-y-3">
-              <p className="text-sm uppercase tracking-[0.28em] text-slate-400">
-                Step 2
-              </p>
               <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
-                新增投递记录
+                新增投递
               </h1>
               <p className="max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                粘贴招聘链接后会先在本地解析公司名，再写入投递主表。初始时间线事件由
-                Supabase trigger 自动创建。
+                补充一条新的投递记录，后续阶段变化和备注都会围绕这条记录持续更新。
               </p>
             </div>
           </div>

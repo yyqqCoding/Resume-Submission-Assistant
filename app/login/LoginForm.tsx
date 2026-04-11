@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { createClient } from '@/lib/supabase/client'
 
 type AuthResult = {
@@ -119,38 +122,36 @@ export default function LoginForm({
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-700" htmlFor="email">
-          邮箱
-        </label>
-        <input
+        <Label htmlFor="email">邮箱</Label>
+        <Input
           id="email"
           type="email"
           autoComplete="email"
           placeholder="you@example.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-700"
+          className="w-full"
         />
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-slate-700" htmlFor="password">
-          密码
-        </label>
-        <input
+        <Label htmlFor="password">密码</Label>
+        <Input
           id="password"
           type="password"
           autoComplete={isSignUp ? 'new-password' : 'current-password'}
           placeholder="请输入密码"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none transition focus:border-emerald-700"
+          className="w-full"
         />
       </div>
 
       {message ? (
         <p
-          className={`rounded-2xl px-4 py-3 text-sm ${
+          role={message.type === 'success' ? 'status' : 'alert'}
+          aria-live={message.type === 'success' ? 'polite' : 'assertive'}
+          className={`rounded-[calc(var(--radius)+2px)] px-4 py-3 text-sm ${
             message.type === 'success'
               ? 'bg-emerald-50 text-emerald-800'
               : 'bg-red-50 text-red-600'
@@ -160,26 +161,28 @@ export default function LoginForm({
         </p>
       ) : null}
 
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-2xl bg-emerald-800 px-4 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+        className="w-full"
       >
         {isSubmitting ? '处理中...' : isSignUp ? '注册账号' : '登录'}
-      </button>
+      </Button>
 
       <div className="flex items-center justify-between gap-3 text-sm text-slate-500">
         <span>{isSignUp ? '已有账号？' : '没有账号？'}</span>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => {
             setIsSignUp((value) => !value)
             setMessage(null)
           }}
-          className="font-medium text-emerald-800 transition hover:text-emerald-700"
+          className="h-auto px-0 text-emerald-800 hover:bg-transparent hover:text-emerald-700"
         >
           {isSignUp ? '去登录' : '去注册'}
-        </button>
+        </Button>
       </div>
     </form>
   )
