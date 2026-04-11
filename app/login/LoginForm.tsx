@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { getSiteUrl } from '@/lib/env'
 import { createClient } from '@/lib/supabase/client'
 
 type AuthResult = {
@@ -15,6 +16,9 @@ type AuthClient = {
     signUp: (credentials: {
       email: string
       password: string
+      options?: {
+        emailRedirectTo?: string
+      }
     }) => Promise<AuthResult>
     signInWithPassword: (credentials: {
       email: string
@@ -75,9 +79,13 @@ export default function LoginForm({
       const supabase = clientFactory()
 
       if (isSignUp) {
+        const siteUrl = getSiteUrl()
         const { error } = await supabase.auth.signUp({
           email: normalizedEmail,
           password,
+          options: {
+            emailRedirectTo: `${siteUrl}/auth/callback`,
+          },
         })
 
         if (error) {
