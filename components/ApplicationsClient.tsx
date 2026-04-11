@@ -21,11 +21,8 @@ const STACK_TOP_OFFSET_REM = 1.05
 export default function ApplicationsClient({ applications }: Props) {
   const router = useRouter()
   const [items, setItems] = useState(applications)
-  const [currentFilter, setCurrentFilter] =
-    useState<ApplicationStatusFilter>('all')
-  const [activeId, setActiveId] = useState<string | null>(
-    applications[0]?.id ?? null,
-  )
+  const [currentFilter, setCurrentFilter] = useState<ApplicationStatusFilter>('all')
+  const [activeId, setActiveId] = useState<string | null>(null)
 
   useEffect(() => {
     setItems(applications)
@@ -35,6 +32,7 @@ export default function ApplicationsClient({ applications }: Props) {
     currentFilter === 'all'
       ? items
       : items.filter((application) => application.status === currentFilter)
+  const hasActiveCard = activeId !== null
 
   useEffect(() => {
     if (!filteredApplications.length) {
@@ -42,8 +40,8 @@ export default function ApplicationsClient({ applications }: Props) {
       return
     }
 
-    if (!activeId || !filteredApplications.some((item) => item.id === activeId)) {
-      setActiveId(filteredApplications[0].id)
+    if (activeId && !filteredApplications.some((item) => item.id === activeId)) {
+      setActiveId(null)
     }
   }, [activeId, filteredApplications])
 
@@ -128,15 +126,17 @@ export default function ApplicationsClient({ applications }: Props) {
                   'lg:sticky',
                   index === 0 ? 'lg:mt-0' : 'lg:-mt-14',
                   application.id === activeId
-                    ? 'lg:-translate-y-1 lg:scale-[1.01]'
-                    : 'lg:opacity-90',
+                    ? 'lg:-translate-y-1 lg:scale-[1.01] lg:drop-shadow-[0_20px_50px_rgba(15,23,42,0.14)]'
+                    : hasActiveCard
+                      ? 'lg:scale-[0.995]'
+                      : '',
                 )}
                 style={{
                   top: `${1 + index * STACK_TOP_OFFSET_REM}rem`,
                   zIndex:
                     application.id === activeId
                       ? filteredApplications.length + 20
-                      : filteredApplications.length - index,
+                      : index + 1,
                 }}
               >
                 <ApplicationCard
