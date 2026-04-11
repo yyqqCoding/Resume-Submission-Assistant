@@ -4,6 +4,8 @@ type Props = {
   events: ApplicationEvent[]
 }
 
+const BUSINESS_TIME_ZONE = 'Asia/Shanghai'
+
 function formatHappenedAt(value: string) {
   const date = new Date(value)
 
@@ -16,6 +18,8 @@ function formatHappenedAt(value: string) {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
+    hour12: false,
+    timeZone: BUSINESS_TIME_ZONE,
   }).format(date)
 }
 
