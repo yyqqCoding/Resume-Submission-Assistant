@@ -1,9 +1,9 @@
-import Link from 'next/link'
 import {
   getApplicationDetail,
   type ApplicationDetailResult,
 } from '@/app/applications/actions'
 import ApplicationDetailClient from '@/components/ApplicationDetailClient'
+import BackToApplicationsButton from '@/components/BackToApplicationsButton'
 import StatusBadge from '@/components/StatusBadge'
 import Timeline from '@/components/Timeline'
 
@@ -30,12 +30,11 @@ function renderEmptyState() {
         <p className="mt-3 text-sm leading-6 text-slate-600">
           这条投递可能已被删除，或不属于当前登录用户。
         </p>
-        <Link
-          href="/applications"
+        <BackToApplicationsButton
           className="mt-6 inline-flex rounded-full bg-emerald-700 px-4 py-2 text-sm font-medium text-white"
         >
           返回列表
-        </Link>
+        </BackToApplicationsButton>
       </div>
     </main>
   )
@@ -55,12 +54,9 @@ export default async function ApplicationDetailPage({ params }: Props) {
     <main className="min-h-screen bg-[var(--page-bg)] px-6 py-10 text-slate-900">
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="flex items-center justify-between gap-4">
-          <Link
-            href="/applications"
-            className="text-sm font-medium text-emerald-700"
-          >
+          <BackToApplicationsButton className="text-sm font-medium text-emerald-700">
             ← 返回列表
-          </Link>
+          </BackToApplicationsButton>
           <StatusBadge status={application.status} />
         </div>
 

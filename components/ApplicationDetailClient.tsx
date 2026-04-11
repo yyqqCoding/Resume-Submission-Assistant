@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { startTransition, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   deleteApplication,
@@ -13,6 +13,7 @@ import {
   STATUS_LABEL,
   type Application,
   type ApplicationEvent,
+  type ApplicationStatus,
 } from '@/types'
 import StatusBadge from './StatusBadge'
 
@@ -26,6 +27,7 @@ export default function ApplicationDetailClient({ app, events }: Props) {
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuSide, setMenuSide] = useState<'top' | 'bottom'>('bottom')
+  const [currentStatus, setCurrentStatus] = useState(app.status)
   const [remark, setRemark] = useState(events[0]?.remark ?? '')
   const [isStatusPending, setIsStatusPending] = useState(false)
   const [isRemarkPending, setIsRemarkPending] = useState(false)
@@ -52,8 +54,8 @@ export default function ApplicationDetailClient({ app, events }: Props) {
     setMenuOpen(true)
   }
 
-  async function handleStatusChange(nextStatus: string) {
-    if (nextStatus === app.status) {
+  async function handleStatusChange(nextStatus: ApplicationStatus) {
+    if (nextStatus === currentStatus) {
       setMenuOpen(false)
       return
     }
@@ -71,7 +73,10 @@ export default function ApplicationDetailClient({ app, events }: Props) {
       return
     }
 
-    router.refresh()
+    setCurrentStatus(nextStatus)
+    startTransition(() => {
+      router.refresh()
+    })
   }
 
   async function handleRemarkSubmit() {
@@ -94,7 +99,9 @@ export default function ApplicationDetailClient({ app, events }: Props) {
       return
     }
 
-    router.refresh()
+    startTransition(() => {
+      router.refresh()
+    })
   }
 
   async function handleDelete() {
@@ -126,7 +133,7 @@ export default function ApplicationDetailClient({ app, events }: Props) {
             维护当前阶段、最新进展备注和删除操作。
           </p>
         </div>
-        <StatusBadge status={app.status} />
+        <StatusBadge status={currentStatus} />
       </div>
 
       <div className="mt-5">
@@ -149,7 +156,7 @@ export default function ApplicationDetailClient({ app, events }: Props) {
               }`}
             >
               {ALL_STATUSES.map((status) => {
-                const isCurrent = status === app.status
+                const isCurrent = status === currentStatus
 
                 return (
                   <button

@@ -2,8 +2,12 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
-import type { Application, ApplicationStatusFilter } from '@/types'
+import { startTransition, useEffect, useState } from 'react'
+import type {
+  Application,
+  ApplicationStatus,
+  ApplicationStatusFilter,
+} from '@/types'
 import ApplicationCard from './ApplicationCard'
 import StatusFilter from './StatusFilter'
 
@@ -13,22 +17,27 @@ type Props = {
 
 export default function ApplicationsClient({ applications }: Props) {
   const router = useRouter()
+  const [items, setItems] = useState(applications)
   const [currentFilter, setCurrentFilter] =
     useState<ApplicationStatusFilter>('all')
 
+  useEffect(() => {
+    setItems(applications)
+  }, [applications])
+
   const filteredApplications =
     currentFilter === 'all'
-      ? applications
-      : applications.filter((application) => application.status === currentFilter)
+      ? items
+      : items.filter((application) => application.status === currentFilter)
 
-  const offerCount = applications.filter(
+  const offerCount = items.filter(
     (application) => application.status === 'offer',
   ).length
-  const rejectedCount = applications.filter(
+  const rejectedCount = items.filter(
     (application) => application.status === 'rejected',
   ).length
 
-  if (applications.length === 0) {
+  if (items.length === 0) {
     return (
       <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white/70 px-6 py-10 text-center">
         <p className="text-lg font-semibold text-slate-900">还没有投递记录</p>
@@ -53,7 +62,7 @@ export default function ApplicationsClient({ applications }: Props) {
             Total
           </p>
           <p className="mt-2 text-3xl font-semibold text-slate-900">
-            {applications.length}
+            {items.length}
           </p>
           <p className="mt-1 text-sm text-slate-500">总投递</p>
         </div>
@@ -94,7 +103,21 @@ export default function ApplicationsClient({ applications }: Props) {
             <ApplicationCard
               key={application.id}
               app={application}
-              onStatusUpdated={() => router.refresh()}
+              onStatusUpdated={(nextStatus: ApplicationStatus) => {
+                setItems((current) =>
+                  current.map((item) =>
+                    item.id === application.id
+                      ? {
+                          ...item,
+                          status: nextStatus,
+                        }
+                      : item,
+                  ),
+                )
+                startTransition(() => {
+                  router.refresh()
+                })
+              }}
             />
           ))}
         </div>

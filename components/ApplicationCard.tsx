@@ -1,15 +1,21 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useRef, useState } from 'react'
 import { updateApplicationStatus } from '@/app/applications/actions'
 import { getStatusMenuSide } from '@/lib/status-menu-side'
-import { ALL_STATUSES, STATUS_LABEL, type Application } from '@/types'
+import {
+  ALL_STATUSES,
+  STATUS_LABEL,
+  type Application,
+  type ApplicationStatus,
+} from '@/types'
 import StatusBadge from './StatusBadge'
 
 type Props = {
   app: Application
-  onStatusUpdated: () => void | Promise<void>
+  onStatusUpdated: (nextStatus: ApplicationStatus) => void | Promise<void>
 }
 
 function formatAppliedAt(value: string) {
@@ -23,7 +29,9 @@ function formatAppliedAt(value: string) {
 }
 
 export default function ApplicationCard({ app, onStatusUpdated }: Props) {
+  const router = useRouter()
   const triggerRef = useRef<HTMLButtonElement | null>(null)
+  const prefetchedRef = useRef(false)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuSide, setMenuSide] = useState<'top' | 'bottom'>('bottom')
   const [isUpdating, setIsUpdating] = useState(false)
@@ -47,7 +55,7 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
     setMenuOpen(true)
   }
 
-  async function handleStatusChange(nextStatus: string) {
+  async function handleStatusChange(nextStatus: ApplicationStatus) {
     if (nextStatus === app.status) {
       setMenuOpen(false)
       return
@@ -66,7 +74,16 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
     }
 
     setIsUpdating(false)
-    await onStatusUpdated()
+    await onStatusUpdated(nextStatus)
+  }
+
+  function prefetchDetail() {
+    if (prefetchedRef.current) {
+      return
+    }
+
+    prefetchedRef.current = true
+    router.prefetch(`/applications/${app.id}`)
   }
 
   return (
@@ -143,6 +160,8 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
 
         <Link
           href={`/applications/${app.id}`}
+          onMouseEnter={prefetchDetail}
+          onFocus={prefetchDetail}
           className="text-xs font-medium text-slate-500 transition hover:text-emerald-700"
         >
           查看详情
