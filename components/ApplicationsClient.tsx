@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { startTransition, useEffect, useState } from 'react'
+import { startTransition, useEffect, useRef, useState } from 'react'
 import { cn } from '@/lib/utils'
 import type {
   Application,
@@ -18,8 +18,21 @@ type Props = {
 
 const STACK_TOP_OFFSET_REM = 1.05
 
+function isInteractiveTarget(target: EventTarget | null) {
+  if (!(target instanceof Element)) {
+    return false
+  }
+
+  return Boolean(
+    target.closest(
+      'button, a, input, textarea, select, label, [role="menuitem"], [data-slot="button"], [data-slot="dropdown-menu-trigger"], [data-slot="dropdown-menu-content"], [data-slot="input"], [data-slot="textarea"]',
+    ),
+  )
+}
+
 export default function ApplicationsClient({ applications }: Props) {
   const router = useRouter()
+  const regionRef = useRef<HTMLDivElement | null>(null)
   const [items, setItems] = useState(applications)
   const [currentFilter, setCurrentFilter] = useState<ApplicationStatusFilter>('all')
   const [activeId, setActiveId] = useState<string | null>(null)
@@ -44,6 +57,31 @@ export default function ApplicationsClient({ applications }: Props) {
       setActiveId(null)
     }
   }, [activeId, filteredApplications])
+
+  useEffect(() => {
+    if (!activeId) {
+      return
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      const target = event.target
+
+      if (!(target instanceof Node)) {
+        return
+      }
+
+      if (regionRef.current?.contains(target)) {
+        return
+      }
+
+      setActiveId(null)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+    }
+  }, [activeId])
 
   const offerCount = items.filter(
     (application) => application.status === 'offer',
@@ -110,16 +148,38 @@ export default function ApplicationsClient({ applications }: Props) {
         <div
           role="region"
           aria-label="投递记录列表"
+          ref={regionRef}
           className="scrollbar-hidden rounded-[1.75rem] border border-slate-200/70 bg-white/45 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm lg:max-h-[min(66vh,48rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-3 lg:pr-2"
         >
-          <div className="space-y-4 lg:space-y-0 lg:pb-6">
+          <div
+            className="space-y-4 lg:space-y-0 lg:pb-6"
+            onClick={(event) => {
+              const target = event.target
+
+              if (!(target instanceof Element)) {
+                return
+              }
+
+              if (!target.closest('[data-testid="stacked-card-shell"]')) {
+                setActiveId(null)
+              }
+            }}
+          >
             {filteredApplications.map((application, index) => (
               <div
                 key={application.id}
                 data-testid="stacked-card-shell"
                 data-stack-index={index}
                 data-stack-active={application.id === activeId}
-                onClick={() => setActiveId(application.id)}
+                onClick={(event) => {
+                  if (isInteractiveTarget(event.target)) {
+                    return
+                  }
+
+                  setActiveId((current) =>
+                    current === application.id ? null : application.id,
+                  )
+                }}
                 onFocusCapture={() => setActiveId(application.id)}
                 className={cn(
                   'relative transition-[transform,filter,opacity,box-shadow] duration-200',
