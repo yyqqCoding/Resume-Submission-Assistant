@@ -6,7 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { STATUS_LABEL, type ApplicationEvent } from '@/types'
 
 type Props = {
-  event: ApplicationEvent | null
+  event: ApplicationEvent
   value: string
   error: string
   isPending: boolean
@@ -41,19 +41,8 @@ export default function EventRecordPanel({
   onChange,
   onSave,
 }: Props) {
-  if (!event) {
-    return (
-      <div className="rounded-[1.5rem] border border-dashed border-slate-300 bg-white/70 p-5">
-        <h3 className="text-sm font-medium text-slate-900">面试记录</h3>
-        <p className="mt-3 text-sm leading-6 text-slate-500">
-          选择一个状态节点，查看或编辑对应的面试记录。
-        </p>
-      </div>
-    )
-  }
-
   return (
-    <div className="rounded-[1.5rem] border border-slate-200 bg-white/80 p-5">
+    <div className="rounded-[1.5rem] border border-slate-200 bg-white/80 p-5 shadow-[0_16px_40px_rgba(15,23,42,0.08)]">
       <div className="flex items-center justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-emerald-700">

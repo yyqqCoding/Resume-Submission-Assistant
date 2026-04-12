@@ -205,6 +205,19 @@ export default function ApplicationDetailClient({ app, events }: Props) {
     router.push('/applications')
   }
 
+  const recordPanel = selectedEvent ? (
+    <EventRecordPanel
+      event={selectedEvent}
+      value={remark}
+      error={remarkError}
+      isPending={isRemarkPending}
+      onChange={setRemark}
+      onSave={() => {
+        void handleRemarkSubmit()
+      }}
+    />
+  ) : null
+
   return (
     <div
       ref={detailWorkspaceRef}
@@ -214,14 +227,18 @@ export default function ApplicationDetailClient({ app, events }: Props) {
         events={items}
         selectedEventId={selectedEventId}
         onSelect={setSelectedEventId}
+        recordPanel={recordPanel}
       />
 
-      <section className="rounded-[1.75rem] border border-slate-200/70 bg-[var(--card)] p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]">
+      <section
+        data-testid="detail-action-sidebar"
+        className="rounded-[1.75rem] border border-slate-200/70 bg-[var(--card)] p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)]"
+      >
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-base font-semibold text-slate-900">跟进操作</h2>
             <p className="mt-1 text-sm text-slate-500">
-              更新当前进展，维护选中状态的面试记录，或在确认后删除这条记录。
+              更新当前进展，或在确认后删除这条记录。
             </p>
           </div>
           <StatusBadge status={currentStatus} />
@@ -269,19 +286,6 @@ export default function ApplicationDetailClient({ app, events }: Props) {
               {statusError}
             </p>
           ) : null}
-        </div>
-
-        <div className="mt-8">
-          <EventRecordPanel
-            event={selectedEvent}
-            value={remark}
-            error={remarkError}
-            isPending={isRemarkPending}
-            onChange={setRemark}
-            onSave={() => {
-              void handleRemarkSubmit()
-            }}
-          />
         </div>
 
         <div className="mt-8 border-t border-slate-200 pt-6">

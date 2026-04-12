@@ -1,9 +1,11 @@
+import type { ReactNode } from 'react'
 import { STATUS_LABEL, type ApplicationEvent } from '@/types'
 
 type Props = {
   events: ApplicationEvent[]
   selectedEventId: string | null
   onSelect: (eventId: string | null) => void
+  recordPanel?: ReactNode
 }
 
 const BUSINESS_TIME_ZONE = 'Asia/Shanghai'
@@ -38,6 +40,7 @@ export default function Timeline({
   events,
   selectedEventId,
   onSelect,
+  recordPanel,
 }: Props) {
   if (!events.length) {
     return (
@@ -58,7 +61,15 @@ export default function Timeline({
           const summary = getRemarkSummary(event.remark)
 
           return (
-            <li key={event.id}>
+            <li
+              key={event.id}
+              data-testid={`timeline-row-${event.id}`}
+              className={`grid gap-3 ${
+                isSelected && recordPanel
+                  ? 'grid-cols-1 lg:grid-cols-[minmax(0,1fr)_minmax(20rem,24rem)]'
+                  : 'grid-cols-1'
+              }`}
+            >
               <button
                 type="button"
                 data-testid={`timeline-item-${event.id}`}
@@ -89,6 +100,14 @@ export default function Timeline({
                   ) : null}
                 </div>
               </button>
+              {isSelected && recordPanel ? (
+                <div
+                  data-testid="timeline-record-panel-slot"
+                  className="min-w-0"
+                >
+                  {recordPanel}
+                </div>
+              ) : null}
             </li>
           )
         })}
