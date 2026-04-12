@@ -226,6 +226,49 @@ export async function updateLatestEventRemark(
   return { error: null }
 }
 
+export async function updateEventInterviewRecord(
+  eventId: string,
+  remark: string,
+): Promise<ActionResult> {
+  const trimmedRemark = remark.trim()
+
+  if (!trimmedRemark) {
+    return { error: '请填写面试记录' }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser()
+
+  if (authError || !user) {
+    redirect('/login')
+  }
+
+  const { data: ownedEvent, error: ownedEventError } = await supabase
+    .from('application_events')
+    .select('id, application_id, applications!inner(user_id)')
+    .eq('id', eventId)
+    .eq('applications.user_id', user.id)
+    .maybeSingle()
+
+  if (ownedEventError || !ownedEvent) {
+    return { error: '未找到这条状态记录' }
+  }
+
+  const { error } = await supabase
+    .from('application_events')
+    .update({ remark: trimmedRemark })
+    .eq('id', eventId)
+
+  if (error) {
+    return { error: '面试记录保存失败，请重试' }
+  }
+
+  return { error: null }
+}
+
 export async function deleteApplication(id: string): Promise<ActionResult> {
   const supabase = await createClient()
   const {

@@ -5,7 +5,6 @@ import {
 import ApplicationDetailClient from '@/components/ApplicationDetailClient'
 import BackToApplicationsButton from '@/components/BackToApplicationsButton'
 import StatusBadge from '@/components/StatusBadge'
-import Timeline from '@/components/Timeline'
 
 type Props = {
   params: Promise<{ id: string }>
@@ -94,10 +93,7 @@ export default async function ApplicationDetailPage({ params }: Props) {
           ) : null}
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <Timeline events={events} />
-          <ApplicationDetailClient app={application} events={events} />
-        </div>
+        <ApplicationDetailClient app={application} events={events} />
       </div>
     </main>
   )
