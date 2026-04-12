@@ -2,7 +2,9 @@ export const ALL_STATUSES = [
   'applied',
   'interview_1',
   'interview_2',
-  'final',
+  'interview_3',
+  'additional_interview',
+  'hr_interview',
   'offer',
   'rejected',
 ] as const
@@ -14,7 +16,9 @@ export const STATUS_LABEL: Record<ApplicationStatus, string> = {
   applied: '已投递',
   interview_1: '一面',
   interview_2: '二面',
-  final: '终面',
+  interview_3: '三面',
+  additional_interview: '加面',
+  hr_interview: 'HR面',
   offer: 'Offer',
   rejected: '已拒',
 }
