@@ -31,9 +31,9 @@ import {
   type ApplicationEvent,
   type ApplicationStatus,
 } from '@/types'
-import EventRecordPanel from './EventRecordPanel'
 import StatusBadge from './StatusBadge'
 import Timeline from './Timeline'
+import TimelineEventDialog from './TimelineEventDialog'
 
 type Props = {
   app: Application
@@ -43,7 +43,6 @@ type Props = {
 export default function ApplicationDetailClient({ app, events }: Props) {
   const router = useRouter()
   const triggerRef = useRef<HTMLButtonElement | null>(null)
-  const detailWorkspaceRef = useRef<HTMLDivElement | null>(null)
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuSide, setMenuSide] = useState<'top' | 'bottom'>('bottom')
   const [currentStatus, setCurrentStatus] = useState(app.status)
@@ -51,6 +50,7 @@ export default function ApplicationDetailClient({ app, events }: Props) {
   const [selectedEventId, setSelectedEventId] = useState<string | null>(
     events[0]?.id ?? null,
   )
+  const [dialogOpen, setDialogOpen] = useState(false)
   const [remark, setRemark] = useState(events[0]?.remark ?? '')
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [isStatusPending, setIsStatusPending] = useState(false)
@@ -90,24 +90,6 @@ export default function ApplicationDetailClient({ app, events }: Props) {
     setRemarkError('')
   }, [selectedEvent?.id, selectedEvent?.remark])
 
-  useEffect(() => {
-    function handlePointerDown(event: PointerEvent) {
-      const target = event.target as Node | null
-
-      if (!target || detailWorkspaceRef.current?.contains(target)) {
-        return
-      }
-
-      setSelectedEventId(null)
-    }
-
-    document.addEventListener('pointerdown', handlePointerDown)
-
-    return () => {
-      document.removeEventListener('pointerdown', handlePointerDown)
-    }
-  }, [])
-
   function handleMenuChange(nextOpen: boolean) {
     if (nextOpen && triggerRef.current) {
       setMenuSide(
@@ -146,6 +128,20 @@ export default function ApplicationDetailClient({ app, events }: Props) {
     startTransition(() => {
       router.refresh()
     })
+  }
+
+  function handleTimelineSelect(eventId: string | null) {
+    if (!eventId) {
+      return
+    }
+
+    setSelectedEventId(eventId)
+    setDialogOpen(true)
+  }
+
+  function handleDialogClose() {
+    setDialogOpen(false)
+    setRemarkError('')
   }
 
   async function handleRemarkSubmit() {
@@ -205,29 +201,25 @@ export default function ApplicationDetailClient({ app, events }: Props) {
     router.push('/applications')
   }
 
-  const recordPanel = selectedEvent ? (
-    <EventRecordPanel
-      event={selectedEvent}
-      value={remark}
-      error={remarkError}
-      isPending={isRemarkPending}
-      onChange={setRemark}
-      onSave={() => {
-        void handleRemarkSubmit()
-      }}
-    />
-  ) : null
-
   return (
-    <div
-      ref={detailWorkspaceRef}
-      className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]"
-    >
+    <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
       <Timeline
         events={items}
         selectedEventId={selectedEventId}
-        onSelect={setSelectedEventId}
-        recordPanel={recordPanel}
+        onSelect={handleTimelineSelect}
+      />
+
+      <TimelineEventDialog
+        event={selectedEvent}
+        open={dialogOpen && !!selectedEvent}
+        value={remark}
+        error={remarkError}
+        isPending={isRemarkPending}
+        onChange={setRemark}
+        onSave={() => {
+          void handleRemarkSubmit()
+        }}
+        onClose={handleDialogClose}
       />
 
       <section
