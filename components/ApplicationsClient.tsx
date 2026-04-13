@@ -10,10 +10,22 @@ import type {
   ApplicationStatusFilter,
 } from '@/types'
 import ApplicationCard from './ApplicationCard'
+import PaginationControls from './PaginationControls'
 import StatusFilter from './StatusFilter'
 
 type Props = {
   applications: Application[]
+  currentFilter: ApplicationStatusFilter
+  currentPage: number
+  totalPages: number
+  filteredTotalCount: number
+  summary: {
+    totalApplications: number | null
+    offerApplications: number | null
+    rejectedApplications: number | null
+  }
+  listError: string
+  statsError: string
 }
 
 const STACK_TOP_OFFSET_REM = 1.05
@@ -30,33 +42,44 @@ function isInteractiveTarget(target: EventTarget | null) {
   )
 }
 
-export default function ApplicationsClient({ applications }: Props) {
+function renderSummaryValue(value: number | null) {
+  return value ?? '--'
+}
+
+export default function ApplicationsClient({
+  applications,
+  currentFilter,
+  currentPage,
+  totalPages,
+  filteredTotalCount,
+  summary,
+  listError,
+  statsError,
+}: Props) {
   const router = useRouter()
   const regionRef = useRef<HTMLDivElement | null>(null)
   const [items, setItems] = useState(applications)
-  const [currentFilter, setCurrentFilter] = useState<ApplicationStatusFilter>('all')
   const [activeId, setActiveId] = useState<string | null>(null)
+  const hasActiveCard = activeId !== null
+  const showGlobalEmptyState = !listError && summary.totalApplications === 0
+  const showFilterEmptyState =
+    !listError && summary.totalApplications !== 0 && items.length === 0
 
   useEffect(() => {
     setItems(applications)
-  }, [applications])
-
-  const filteredApplications =
-    currentFilter === 'all'
-      ? items
-      : items.filter((application) => application.status === currentFilter)
-  const hasActiveCard = activeId !== null
+    setActiveId(null)
+  }, [applications, currentFilter, currentPage])
 
   useEffect(() => {
-    if (!filteredApplications.length) {
+    if (!items.length) {
       setActiveId(null)
       return
     }
 
-    if (activeId && !filteredApplications.some((item) => item.id === activeId)) {
+    if (activeId && !items.some((item) => item.id === activeId)) {
       setActiveId(null)
     }
-  }, [activeId, filteredApplications])
+  }, [activeId, items])
 
   useEffect(() => {
     if (!activeId) {
@@ -83,14 +106,7 @@ export default function ApplicationsClient({ applications }: Props) {
     }
   }, [activeId])
 
-  const offerCount = items.filter(
-    (application) => application.status === 'offer',
-  ).length
-  const rejectedCount = items.filter(
-    (application) => application.status === 'rejected',
-  ).length
-
-  if (items.length === 0) {
+  if (showGlobalEmptyState) {
     return (
       <div className="rounded-[1.75rem] border border-dashed border-slate-300 bg-white/70 px-6 py-10 text-center">
         <p className="text-lg font-semibold text-slate-900">还没有投递记录</p>
@@ -109,11 +125,17 @@ export default function ApplicationsClient({ applications }: Props) {
 
   return (
     <div className="space-y-6">
+      {statsError ? (
+        <p className="rounded-[1.25rem] border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          {statsError}
+        </p>
+      ) : null}
+
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-[1.5rem] border border-slate-200 bg-white p-4">
           <p className="text-xs uppercase tracking-[0.24em] text-slate-400">总投递</p>
           <p className="mt-2 text-3xl font-semibold text-slate-900">
-            {items.length}
+            {renderSummaryValue(summary.totalApplications)}
           </p>
           <p className="mt-1 text-sm text-slate-500">总投递</p>
         </div>
@@ -121,7 +143,7 @@ export default function ApplicationsClient({ applications }: Props) {
         <div className="rounded-[1.5rem] border border-emerald-200 bg-emerald-50 p-4">
           <p className="text-xs uppercase tracking-[0.24em] text-emerald-700/70">Offer</p>
           <p className="mt-2 text-3xl font-semibold text-emerald-800">
-            {offerCount}
+            {renderSummaryValue(summary.offerApplications)}
           </p>
           <p className="mt-1 text-sm text-emerald-700">Offer 数</p>
         </div>
@@ -129,97 +151,119 @@ export default function ApplicationsClient({ applications }: Props) {
         <div className="rounded-[1.5rem] border border-slate-200 bg-slate-50 p-4">
           <p className="text-xs uppercase tracking-[0.24em] text-slate-400">已拒</p>
           <p className="mt-2 text-3xl font-semibold text-slate-700">
-            {rejectedCount}
+            {renderSummaryValue(summary.rejectedApplications)}
           </p>
           <p className="mt-1 text-sm text-slate-500">已拒数量</p>
         </div>
       </div>
 
-      <StatusFilter current={currentFilter} onChange={setCurrentFilter} />
+      <StatusFilter current={currentFilter} />
 
-      {filteredApplications.length === 0 ? (
+      {listError ? (
+        <div className="rounded-[1.75rem] border border-red-200 bg-red-50 px-6 py-10 text-center">
+          <p className="text-lg font-semibold text-red-700">{listError}</p>
+          <p className="mt-3 text-sm text-red-600">
+            可以稍后刷新重试，或者先查看其他投递记录。
+          </p>
+        </div>
+      ) : showFilterEmptyState ? (
         <div className="rounded-[1.75rem] border border-slate-200 bg-white px-6 py-10 text-center">
-          <p className="text-lg font-semibold text-slate-900">该状态下暂无记录</p>
+          <p className="text-lg font-semibold text-slate-900">当前筛选下暂无记录</p>
           <p className="mt-3 text-sm text-slate-500">
             切换筛选条件，或者先继续推进当前正在进行的投递。
           </p>
         </div>
       ) : (
-        <div
-          role="region"
-          aria-label="投递记录列表"
-          ref={regionRef}
-          className="scrollbar-hidden rounded-[1.75rem] border border-slate-200/70 bg-white/45 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm lg:max-h-[min(66vh,48rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-3 lg:pr-2"
-        >
+        <div className="rounded-[1.75rem] border border-slate-200/70 bg-white/45 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.45)] backdrop-blur-sm">
           <div
-            className="space-y-4 lg:space-y-0 lg:pb-6"
-            onClick={(event) => {
-              const target = event.target
-
-              if (!(target instanceof Element)) {
-                return
-              }
-
-              if (!target.closest('[data-testid="stacked-card-shell"]')) {
-                setActiveId(null)
-              }
-            }}
+            role="region"
+            aria-label="投递记录列表"
+            ref={regionRef}
+            className="scrollbar-hidden lg:max-h-[min(66vh,48rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-1 lg:pr-0"
           >
-            {filteredApplications.map((application, index) => (
-              <div
-                key={application.id}
-                data-testid="stacked-card-shell"
-                data-stack-index={index}
-                data-stack-active={application.id === activeId}
-                onClick={(event) => {
-                  if (isInteractiveTarget(event.target)) {
-                    return
-                  }
+            <div
+              className="space-y-4 lg:space-y-0 lg:pb-6"
+              onClick={(event) => {
+                const target = event.target
 
-                  setActiveId((current) =>
-                    current === application.id ? null : application.id,
-                  )
-                }}
-                onFocusCapture={() => setActiveId(application.id)}
-                className={cn(
-                  'relative transition-[transform,filter,opacity,box-shadow] duration-200',
-                  'lg:sticky',
-                  index === 0 ? 'lg:mt-0' : 'lg:-mt-14',
-                  application.id === activeId
-                    ? 'lg:-translate-y-1 lg:scale-[1.01] lg:drop-shadow-[0_20px_50px_rgba(15,23,42,0.14)]'
-                    : hasActiveCard
-                      ? 'lg:scale-[0.995]'
-                      : '',
-                )}
-                style={{
-                  top: `${1 + index * STACK_TOP_OFFSET_REM}rem`,
-                  zIndex:
-                    application.id === activeId
-                      ? filteredApplications.length + 20
-                      : index + 1,
-                }}
-              >
-                <ApplicationCard
-                  app={application}
-                  onStatusUpdated={(nextStatus: ApplicationStatus) => {
-                    setItems((current) =>
-                      current.map((item) =>
-                        item.id === application.id
-                          ? {
-                              ...item,
-                              status: nextStatus,
-                            }
-                          : item,
-                      ),
+                if (!(target instanceof Element)) {
+                  return
+                }
+
+                if (!target.closest('[data-testid="stacked-card-shell"]')) {
+                  setActiveId(null)
+                }
+              }}
+            >
+              {items.map((application, index) => (
+                <div
+                  key={application.id}
+                  data-testid="stacked-card-shell"
+                  data-stack-index={index}
+                  data-stack-active={application.id === activeId}
+                  onClick={(event) => {
+                    if (isInteractiveTarget(event.target)) {
+                      return
+                    }
+
+                    setActiveId((current) =>
+                      current === application.id ? null : application.id,
                     )
-                    startTransition(() => {
-                      router.refresh()
-                    })
                   }}
-                />
-              </div>
-            ))}
+                  onFocusCapture={() => setActiveId(application.id)}
+                  className={cn(
+                    'relative transition-[transform,filter,opacity,box-shadow] duration-200',
+                    'lg:sticky',
+                    index === 0 ? 'lg:mt-0' : 'lg:-mt-14',
+                    application.id === activeId
+                      ? 'lg:-translate-y-1 lg:scale-[1.01] lg:drop-shadow-[0_20px_50px_rgba(15,23,42,0.14)]'
+                      : hasActiveCard
+                        ? 'lg:scale-[0.995]'
+                        : '',
+                  )}
+                  style={{
+                    top: `${1 + index * STACK_TOP_OFFSET_REM}rem`,
+                    zIndex:
+                      application.id === activeId ? items.length + 20 : index + 1,
+                  }}
+                >
+                  <ApplicationCard
+                    app={application}
+                    onStatusUpdated={(nextStatus: ApplicationStatus) => {
+                      setItems((current) => {
+                        const nextItems = current
+                          .map((item) =>
+                            item.id === application.id
+                              ? {
+                                  ...item,
+                                  status: nextStatus,
+                                }
+                              : item,
+                          )
+                          .filter(
+                            (item) =>
+                              currentFilter === 'all' ||
+                              item.status === currentFilter,
+                          )
+
+                        return nextItems
+                      })
+                      setActiveId(null)
+                      startTransition(() => {
+                        router.refresh()
+                      })
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
+
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalCount={filteredTotalCount}
+          />
         </div>
       )}
     </div>

@@ -4,10 +4,77 @@ import { redirect } from 'next/navigation'
 import ApplicationsClient from '@/components/ApplicationsClient'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/server'
-import type { Application } from '@/types'
+import { ALL_STATUSES, type Application, type ApplicationStatusFilter } from '@/types'
 import SignOutButton from './sign-out-button'
 
-export default async function ApplicationsPage() {
+const PAGE_SIZE = 10
+
+type SearchParams = {
+  status?: string | string[]
+  page?: string | string[]
+}
+
+function getSingleValue(value: string | string[] | undefined) {
+  return Array.isArray(value) ? value[0] : value
+}
+
+function normalizeFilter(value: string | string[] | undefined): ApplicationStatusFilter {
+  const nextValue = getSingleValue(value)
+
+  if (nextValue && (ALL_STATUSES as readonly string[]).includes(nextValue)) {
+    return nextValue as ApplicationStatusFilter
+  }
+
+  return 'all'
+}
+
+function normalizePage(value: string | string[] | undefined) {
+  const nextValue = Number.parseInt(getSingleValue(value) ?? '1', 10)
+
+  if (!Number.isFinite(nextValue) || nextValue < 1) {
+    return 1
+  }
+
+  return nextValue
+}
+
+function getPageRange(page: number) {
+  const from = (page - 1) * PAGE_SIZE
+
+  return {
+    from,
+    to: from + PAGE_SIZE - 1,
+  }
+}
+
+function getTotalPages(totalCount: number) {
+  return totalCount > 0 ? Math.ceil(totalCount / PAGE_SIZE) : 0
+}
+
+function clampPage(page: number, totalPages: number) {
+  if (totalPages === 0) {
+    return 1
+  }
+
+  return Math.min(page, totalPages)
+}
+
+function getMatchFilter(userId: string, currentFilter: ApplicationStatusFilter) {
+  if (currentFilter === 'all') {
+    return { user_id: userId }
+  }
+
+  return {
+    user_id: userId,
+    status: currentFilter,
+  }
+}
+
+type Props = {
+  searchParams?: Promise<SearchParams>
+}
+
+export default async function ApplicationsPage({ searchParams }: Props) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -18,14 +85,75 @@ export default async function ApplicationsPage() {
     redirect('/login')
   }
 
-  const { data } = await supabase
-    .from('applications')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('applied_at', { ascending: false })
-    .order('created_at', { ascending: false })
+  const resolvedSearchParams = searchParams ? await searchParams : {}
+  const currentFilter = normalizeFilter(resolvedSearchParams.status)
+  const requestedPage = normalizePage(resolvedSearchParams.page)
+  const matchFilter = getMatchFilter(user.id, currentFilter)
 
-  const applications = (data ?? []) as Application[]
+  const { count: rawFilteredTotalCount, error: filteredCountError } = await supabase
+    .from('applications')
+    .select('*', { count: 'exact', head: true })
+    .match(matchFilter)
+
+  const filteredTotalCount = filteredCountError ? 0 : rawFilteredTotalCount ?? 0
+  const totalPages = getTotalPages(filteredTotalCount)
+  const currentPage = clampPage(requestedPage, totalPages)
+
+  let applications: Application[] = []
+  let listError = filteredCountError ? '投递列表加载失败，请稍后再试。' : ''
+
+  if (!listError && filteredTotalCount > 0) {
+    const { from, to } = getPageRange(currentPage)
+    const { data, error: listQueryError } = await supabase
+      .from('applications')
+      .select('*')
+      .match(matchFilter)
+      .order('applied_at', { ascending: false })
+      .order('created_at', { ascending: false })
+      .range(from, to)
+
+    if (listQueryError) {
+      listError = '投递列表加载失败，请稍后再试。'
+    } else {
+      applications = (data ?? []) as Application[]
+    }
+  }
+
+  const [
+    { count: totalApplications, error: totalStatsError },
+    { count: offerApplications, error: offerStatsError },
+    { count: rejectedApplications, error: rejectedStatsError },
+  ] = await Promise.all([
+    supabase
+      .from('applications')
+      .select('*', { count: 'exact', head: true })
+      .match({ user_id: user.id }),
+    supabase
+      .from('applications')
+      .select('*', { count: 'exact', head: true })
+      .match({ user_id: user.id, status: 'offer' }),
+    supabase
+      .from('applications')
+      .select('*', { count: 'exact', head: true })
+      .match({ user_id: user.id, status: 'rejected' }),
+  ])
+
+  const statsError =
+    totalStatsError || offerStatsError || rejectedStatsError
+      ? '统计加载失败，请稍后再试。'
+      : ''
+
+  const summary = statsError
+    ? {
+        totalApplications: null,
+        offerApplications: null,
+        rejectedApplications: null,
+      }
+    : {
+        totalApplications: totalApplications ?? 0,
+        offerApplications: offerApplications ?? 0,
+        rejectedApplications: rejectedApplications ?? 0,
+      }
 
   return (
     <main className="min-h-screen px-4 py-10">
@@ -54,7 +182,16 @@ export default async function ApplicationsPage() {
               </Button>
             </div>
 
-            <ApplicationsClient applications={applications} />
+            <ApplicationsClient
+              applications={applications}
+              currentFilter={currentFilter}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              filteredTotalCount={filteredTotalCount}
+              summary={summary}
+              listError={listError}
+              statsError={statsError}
+            />
           </div>
 
           <aside className="rounded-[1.75rem] border border-slate-200 bg-[linear-gradient(180deg,#fff,#f8fafc)] p-6">

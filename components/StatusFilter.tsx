@@ -1,5 +1,7 @@
 'use client'
 
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { buildApplicationsUrl } from '@/lib/applications-overview'
 import {
   ALL_STATUSES,
   STATUS_LABEL,
@@ -8,7 +10,6 @@ import {
 
 type Props = {
   current: ApplicationStatusFilter
-  onChange: (value: ApplicationStatusFilter) => void
 }
 
 const FILTER_OPTIONS: ApplicationStatusFilter[] = ['all', ...ALL_STATUSES]
@@ -17,7 +18,11 @@ function getFilterLabel(value: ApplicationStatusFilter) {
   return value === 'all' ? '全部' : STATUS_LABEL[value]
 }
 
-export default function StatusFilter({ current, onChange }: Props) {
+export default function StatusFilter({ current }: Props) {
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
   return (
     <fieldset className="flex flex-wrap gap-2">
       <legend className="mb-2 w-full text-sm font-medium text-slate-700">
@@ -33,7 +38,12 @@ export default function StatusFilter({ current, onChange }: Props) {
             aria-pressed={isActive}
             onClick={() => {
               if (!isActive) {
-                onChange(value)
+                router.push(
+                  buildApplicationsUrl(pathname, searchParams.toString(), {
+                    status: value,
+                    page: 1,
+                  }),
+                )
               }
             }}
             className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
