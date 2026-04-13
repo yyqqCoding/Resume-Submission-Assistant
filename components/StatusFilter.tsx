@@ -1,5 +1,6 @@
 'use client'
 
+import { useTransition } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { buildApplicationsUrl } from '@/lib/applications-overview'
 import {
@@ -22,9 +23,15 @@ export default function StatusFilter({ current }: Props) {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [isPending, pendingTransition] = useTransition()
 
   return (
-    <fieldset className="flex flex-wrap gap-2">
+    <fieldset
+      aria-busy={isPending}
+      className={`flex flex-wrap gap-2 transition-opacity ${
+        isPending ? 'opacity-70' : ''
+      }`}
+    >
       <legend className="mb-2 w-full text-sm font-medium text-slate-700">
         状态筛选
       </legend>
@@ -36,14 +43,17 @@ export default function StatusFilter({ current }: Props) {
             key={value}
             type="button"
             aria-pressed={isActive}
+            disabled={isPending}
             onClick={() => {
               if (!isActive) {
-                router.push(
-                  buildApplicationsUrl(pathname, searchParams.toString(), {
-                    status: value,
-                    page: 1,
-                  }),
-                )
+                pendingTransition(() => {
+                  router.push(
+                    buildApplicationsUrl(pathname, searchParams.toString(), {
+                      status: value,
+                      page: 1,
+                    }),
+                  )
+                })
               }
             }}
             className={`rounded-full border px-3 py-2 text-xs font-medium transition ${

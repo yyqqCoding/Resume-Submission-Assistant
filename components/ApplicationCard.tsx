@@ -23,7 +23,9 @@ import StatusBadge from './StatusBadge'
 
 type Props = {
   app: Application
-  onStatusUpdated: (nextStatus: ApplicationStatus) => void | Promise<void>
+  onStatusUpdatedAction: (
+    nextStatus: ApplicationStatus,
+  ) => void | Promise<void>
 }
 
 function formatAppliedAt(value: string) {
@@ -36,7 +38,7 @@ function formatAppliedAt(value: string) {
   return `${Number(parts[1])}月${Number(parts[2])}日`
 }
 
-export default function ApplicationCard({ app, onStatusUpdated }: Props) {
+export default function ApplicationCard({ app, onStatusUpdatedAction }: Props) {
   const router = useRouter()
   const triggerRef = useRef<HTMLButtonElement | null>(null)
   const prefetchedRef = useRef(false)
@@ -78,7 +80,7 @@ export default function ApplicationCard({ app, onStatusUpdated }: Props) {
     }
 
     setIsUpdating(false)
-    await onStatusUpdated(nextStatus)
+    await onStatusUpdatedAction(nextStatus)
     toast.success(`状态已更新为${STATUS_LABEL[nextStatus]}`)
   }
 

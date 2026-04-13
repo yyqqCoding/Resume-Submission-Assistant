@@ -1,5 +1,6 @@
 'use client'
 
+import { useTransition } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { buildApplicationsUrl } from '@/lib/applications-overview'
 import type { ApplicationStatusFilter } from '@/types'
@@ -19,6 +20,7 @@ export default function PaginationControls({
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const [isPending, startNavigation] = useTransition()
   const currentStatus = (searchParams.get('status') ??
     'all') as ApplicationStatusFilter
 
@@ -29,16 +31,23 @@ export default function PaginationControls({
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1)
 
   function pushPage(nextPage: number) {
-    router.push(
-      buildApplicationsUrl(pathname, searchParams.toString(), {
-        status: currentStatus,
-        page: nextPage,
-      }),
-    )
+    startNavigation(() => {
+      router.push(
+        buildApplicationsUrl(pathname, searchParams.toString(), {
+          status: currentStatus,
+          page: nextPage,
+        }),
+      )
+    })
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 px-2 pt-4">
+    <div
+      aria-busy={isPending}
+      className={`flex flex-wrap items-center justify-between gap-4 border-t border-slate-200 px-2 pt-4 transition-opacity ${
+        isPending ? 'opacity-70' : ''
+      }`}
+    >
       <p className="text-sm text-slate-500">
         第 {currentPage} / {totalPages} 页，共 {totalCount} 条
       </p>
@@ -48,7 +57,7 @@ export default function PaginationControls({
           type="button"
           size="sm"
           variant="outline"
-          disabled={currentPage === 1}
+          disabled={isPending || currentPage === 1}
           onClick={() => pushPage(currentPage - 1)}
         >
           上一页
@@ -64,6 +73,7 @@ export default function PaginationControls({
               size="sm"
               variant={isCurrent ? 'default' : 'outline'}
               aria-current={isCurrent ? 'page' : undefined}
+              disabled={isPending}
               onClick={() => pushPage(page)}
             >
               {page}
@@ -75,7 +85,7 @@ export default function PaginationControls({
           type="button"
           size="sm"
           variant="outline"
-          disabled={currentPage === totalPages}
+          disabled={isPending || currentPage === totalPages}
           onClick={() => pushPage(currentPage + 1)}
         >
           下一页

@@ -215,11 +215,11 @@ export default function ApplicationDetailClient({ app, events }: Props) {
         value={remark}
         error={remarkError}
         isPending={isRemarkPending}
-        onChange={setRemark}
-        onSave={() => {
+        onChangeAction={setRemark}
+        onSaveAction={() => {
           void handleRemarkSubmit()
         }}
-        onClose={handleDialogClose}
+        onCloseAction={handleDialogClose}
       />
 
       <section

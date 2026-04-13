@@ -39,8 +39,8 @@ type AuthClient = {
 
 type LoginFormProps = {
   siteUrl: string
-  clientFactory?: () => AuthClient
-  navigate?: (href: string) => void
+  clientFactoryAction?: () => AuthClient
+  navigateAction?: (href: string) => void
 }
 
 type MessageState = {
@@ -53,8 +53,8 @@ const SIGN_UP_CONFIRMATION_MESSAGE =
 
 export default function LoginForm({
   siteUrl,
-  clientFactory = createClient,
-  navigate,
+  clientFactoryAction = createClient,
+  navigateAction,
 }: LoginFormProps) {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -66,7 +66,7 @@ export default function LoginForm({
   const [message, setMessage] = useState<MessageState | null>(null)
 
   const goTo =
-    navigate ??
+    navigateAction ??
     ((href: string) => {
       router.push(href)
       router.refresh()
@@ -133,7 +133,7 @@ export default function LoginForm({
     setMessage(null)
 
     try {
-      const supabase = clientFactory()
+      const supabase = clientFactoryAction()
 
       if (isSignUp) {
         const { error } = await supabase.auth.signUp({

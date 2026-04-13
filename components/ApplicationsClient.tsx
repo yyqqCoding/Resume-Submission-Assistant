@@ -229,9 +229,9 @@ export default function ApplicationsClient({
                 >
                   <ApplicationCard
                     app={application}
-                    onStatusUpdated={(nextStatus: ApplicationStatus) => {
+                    onStatusUpdatedAction={(nextStatus: ApplicationStatus) => {
                       setItems((current) => {
-                        const nextItems = current
+                        return current
                           .map((item) =>
                             item.id === application.id
                               ? {
@@ -245,8 +245,6 @@ export default function ApplicationsClient({
                               currentFilter === 'all' ||
                               item.status === currentFilter,
                           )
-
-                        return nextItems
                       })
                       setActiveId(null)
                       startTransition(() => {

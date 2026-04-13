@@ -89,41 +89,22 @@ export default async function ApplicationsPage({ searchParams }: Props) {
   const currentFilter = normalizeFilter(resolvedSearchParams.status)
   const requestedPage = normalizePage(resolvedSearchParams.page)
   const matchFilter = getMatchFilter(user.id, currentFilter)
+  const initialRange = getPageRange(requestedPage)
 
-  const { count: rawFilteredTotalCount, error: filteredCountError } = await supabase
+  const filteredCountPromise = supabase
     .from('applications')
     .select('*', { count: 'exact', head: true })
     .match(matchFilter)
 
-  const filteredTotalCount = filteredCountError ? 0 : rawFilteredTotalCount ?? 0
-  const totalPages = getTotalPages(filteredTotalCount)
-  const currentPage = clampPage(requestedPage, totalPages)
+  const initialListPromise = supabase
+    .from('applications')
+    .select('*')
+    .match(matchFilter)
+    .order('applied_at', { ascending: false })
+    .order('created_at', { ascending: false })
+    .range(initialRange.from, initialRange.to)
 
-  let applications: Application[] = []
-  let listError = filteredCountError ? '投递列表加载失败，请稍后再试。' : ''
-
-  if (!listError && filteredTotalCount > 0) {
-    const { from, to } = getPageRange(currentPage)
-    const { data, error: listQueryError } = await supabase
-      .from('applications')
-      .select('*')
-      .match(matchFilter)
-      .order('applied_at', { ascending: false })
-      .order('created_at', { ascending: false })
-      .range(from, to)
-
-    if (listQueryError) {
-      listError = '投递列表加载失败，请稍后再试。'
-    } else {
-      applications = (data ?? []) as Application[]
-    }
-  }
-
-  const [
-    { count: totalApplications, error: totalStatsError },
-    { count: offerApplications, error: offerStatsError },
-    { count: rejectedApplications, error: rejectedStatsError },
-  ] = await Promise.all([
+  const statsPromises = Promise.all([
     supabase
       .from('applications')
       .select('*', { count: 'exact', head: true })
@@ -137,6 +118,50 @@ export default async function ApplicationsPage({ searchParams }: Props) {
       .select('*', { count: 'exact', head: true })
       .match({ user_id: user.id, status: 'rejected' }),
   ])
+
+  const [
+    { count: rawFilteredTotalCount, error: filteredCountError },
+    initialListResult,
+    [
+      { count: totalApplications, error: totalStatsError },
+      { count: offerApplications, error: offerStatsError },
+      { count: rejectedApplications, error: rejectedStatsError },
+    ],
+  ] = await Promise.all([
+    filteredCountPromise,
+    initialListPromise,
+    statsPromises,
+  ])
+
+  const filteredTotalCount = filteredCountError ? 0 : rawFilteredTotalCount ?? 0
+  const totalPages = getTotalPages(filteredTotalCount)
+  const currentPage = clampPage(requestedPage, totalPages)
+
+  let applications: Application[] = []
+  let listError = filteredCountError ? '投递列表加载失败，请稍后再试。' : ''
+
+  if (!listError && filteredTotalCount > 0) {
+    let listResult = initialListResult
+
+    if (currentPage !== requestedPage) {
+      const { from, to } = getPageRange(currentPage)
+      listResult = await supabase
+        .from('applications')
+        .select('*')
+        .match(matchFilter)
+        .order('applied_at', { ascending: false })
+        .order('created_at', { ascending: false })
+        .range(from, to)
+    }
+
+    const { data, error: listQueryError } = listResult
+
+    if (listQueryError) {
+      listError = '投递列表加载失败，请稍后再试。'
+    } else {
+      applications = (data ?? []) as Application[]
+    }
+  }
 
   const statsError =
     totalStatsError || offerStatsError || rejectedStatsError

@@ -20,9 +20,9 @@ type Props = {
   value: string
   error: string
   isPending: boolean
-  onChange: (value: string) => void
-  onSave: () => void
-  onClose: () => void
+  onChangeAction: (value: string) => void
+  onSaveAction: () => void
+  onCloseAction: () => void
 }
 
 const BUSINESS_TIME_ZONE = 'Asia/Shanghai'
@@ -50,9 +50,9 @@ export default function TimelineEventDialog({
   value,
   error,
   isPending,
-  onChange,
-  onSave,
-  onClose,
+  onChangeAction,
+  onSaveAction,
+  onCloseAction,
 }: Props) {
   if (!event) {
     return null
@@ -63,7 +63,7 @@ export default function TimelineEventDialog({
       open={open}
       onOpenChange={(nextOpen) => {
         if (!nextOpen) {
-          onClose()
+          onCloseAction()
         }
       }}
     >
@@ -97,7 +97,7 @@ export default function TimelineEventDialog({
             id="timeline-event-record"
             value={value}
             rows={8}
-            onChange={(inputEvent) => onChange(inputEvent.target.value)}
+            onChange={(inputEvent) => onChangeAction(inputEvent.target.value)}
             className="w-full resize-none rounded-[1.5rem] text-slate-700"
           />
 
@@ -112,13 +112,13 @@ export default function TimelineEventDialog({
           ) : null}
 
           <DialogFooter className="border-t border-slate-200/80 pt-4 sm:items-center sm:justify-between">
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button type="button" variant="ghost" onClick={onCloseAction}>
               关闭
             </Button>
             <Button
               type="button"
               disabled={isPending}
-              onClick={onSave}
+              onClick={onSaveAction}
               className="rounded-full"
             >
               {isPending ? '保存中...' : '保存面试记录'}
