@@ -1,45 +1,27 @@
 'use client'
 
-import { useTransition } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { buildApplicationsUrl } from '@/lib/applications-overview'
-import type { ApplicationStatusFilter } from '@/types'
 import { Button } from '@/components/ui/button'
 
 type Props = {
   currentPage: number
   totalPages: number
   totalCount: number
+  isPending: boolean
+  onPageChangeAction: (nextPage: number) => void
 }
 
 export default function PaginationControls({
   currentPage,
   totalPages,
   totalCount,
+  isPending,
+  onPageChangeAction,
 }: Props) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const [isPending, startNavigation] = useTransition()
-  const currentStatus = (searchParams.get('status') ??
-    'all') as ApplicationStatusFilter
-
   if (totalPages <= 1) {
     return null
   }
 
   const pages = Array.from({ length: totalPages }, (_, index) => index + 1)
-
-  function pushPage(nextPage: number) {
-    startNavigation(() => {
-      router.push(
-        buildApplicationsUrl(pathname, searchParams.toString(), {
-          status: currentStatus,
-          page: nextPage,
-        }),
-      )
-    })
-  }
 
   return (
     <div
@@ -58,7 +40,7 @@ export default function PaginationControls({
           size="sm"
           variant="outline"
           disabled={isPending || currentPage === 1}
-          onClick={() => pushPage(currentPage - 1)}
+          onClick={() => onPageChangeAction(currentPage - 1)}
         >
           上一页
         </Button>
@@ -74,7 +56,7 @@ export default function PaginationControls({
               variant={isCurrent ? 'default' : 'outline'}
               aria-current={isCurrent ? 'page' : undefined}
               disabled={isPending}
-              onClick={() => pushPage(page)}
+              onClick={() => onPageChangeAction(page)}
             >
               {page}
             </Button>
@@ -86,7 +68,7 @@ export default function PaginationControls({
           size="sm"
           variant="outline"
           disabled={isPending || currentPage === totalPages}
-          onClick={() => pushPage(currentPage + 1)}
+          onClick={() => onPageChangeAction(currentPage + 1)}
         >
           下一页
         </Button>

@@ -1,8 +1,5 @@
 'use client'
 
-import { useTransition } from 'react'
-import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { buildApplicationsUrl } from '@/lib/applications-overview'
 import {
   ALL_STATUSES,
   STATUS_LABEL,
@@ -11,6 +8,8 @@ import {
 
 type Props = {
   current: ApplicationStatusFilter
+  isPending: boolean
+  onFilterChangeAction: (nextFilter: ApplicationStatusFilter) => void
 }
 
 const FILTER_OPTIONS: ApplicationStatusFilter[] = ['all', ...ALL_STATUSES]
@@ -19,12 +18,11 @@ function getFilterLabel(value: ApplicationStatusFilter) {
   return value === 'all' ? '全部' : STATUS_LABEL[value]
 }
 
-export default function StatusFilter({ current }: Props) {
-  const router = useRouter()
-  const pathname = usePathname()
-  const searchParams = useSearchParams()
-  const [isPending, pendingTransition] = useTransition()
-
+export default function StatusFilter({
+  current,
+  isPending,
+  onFilterChangeAction,
+}: Props) {
   return (
     <fieldset
       aria-busy={isPending}
@@ -46,14 +44,7 @@ export default function StatusFilter({ current }: Props) {
             disabled={isPending}
             onClick={() => {
               if (!isActive) {
-                pendingTransition(() => {
-                  router.push(
-                    buildApplicationsUrl(pathname, searchParams.toString(), {
-                      status: value,
-                      page: 1,
-                    }),
-                  )
-                })
+                onFilterChangeAction(value)
               }
             }}
             className={`rounded-full border px-3 py-2 text-xs font-medium transition ${
