@@ -52,6 +52,7 @@ npm install
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+JOBAGENT_BASE_URL=http://127.0.0.1:18090
 ```
 
 ### 3. 初始化数据库
@@ -103,6 +104,7 @@ Vercel 生产环境至少需要：
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 NEXT_PUBLIC_SITE_URL=https://jobb.lol
+JOBAGENT_BASE_URL=https://your-jobagent-service.example.com
 ```
 
 ### Supabase Auth 配置

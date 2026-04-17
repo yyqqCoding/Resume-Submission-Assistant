@@ -32,6 +32,7 @@ import {
   type ApplicationStatus,
 } from '@/types'
 import StatusBadge from './StatusBadge'
+import InterviewPanel from './InterviewPanel'
 import Timeline from './Timeline'
 import TimelineEventDialog from './TimelineEventDialog'
 
@@ -329,6 +330,8 @@ export default function ApplicationDetailClient({ app, events }: Props) {
             </p>
           ) : null}
         </div>
+
+        <InterviewPanel app={app} />
       </section>
     </div>
   )
