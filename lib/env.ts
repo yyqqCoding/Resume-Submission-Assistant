@@ -26,3 +26,13 @@ export function getSiteUrl(source: PublicEnvSource = process.env) {
 
   return trimTrailingSlash(siteUrl)
 }
+
+export function getJobAgentBaseUrl(source: PublicEnvSource = process.env) {
+  const baseUrl = source.JOBAGENT_BASE_URL?.trim()
+
+  if (!baseUrl) {
+    throw new Error('Missing JOBAGENT_BASE_URL.')
+  }
+
+  return trimTrailingSlash(baseUrl)
+}
