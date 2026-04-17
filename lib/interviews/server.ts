@@ -12,7 +12,118 @@ type OwnedApplication = {
   job_title: string | null
 }
 
-function toQuestionView(raw: any): InterviewQuestionView {
+type JobAgentQuestionRaw = {
+  id: string
+  topic?: string
+  question?: string
+  evidence_label?: string
+  difficulty?: string | null
+  expected_signals?: unknown
+  question_kind?: 'primary' | 'follow_up'
+}
+
+type JobAgentProgressRaw = {
+  current_index?: number
+  answered_count?: number
+  total_questions?: number
+  completed?: boolean
+}
+
+type JobAgentTurnRaw = {
+  question_id: string
+  answer: string
+  score?: number
+  short_feedback?: string
+  topic?: string
+  question_kind?: 'primary' | 'follow_up'
+}
+
+export type JobAgentSessionRaw = {
+  session_id: string
+  user_id: string
+  application_id: string
+  company: string
+  role: string
+  current_question?: JobAgentQuestionRaw | null
+  progress?: JobAgentProgressRaw
+  completed?: boolean
+  research_summary?: Record<string, unknown>
+  turns?: JobAgentTurnRaw[]
+  session_summary?: {
+    total_questions?: number
+    answered_count?: number
+    average_score?: number
+    topics?: unknown
+    completed?: boolean
+  } | null
+}
+
+export type JobAgentAnswerRaw = {
+  decision: 'follow_up' | 'next_question' | 'session_completed'
+  evaluation?: {
+    score?: number
+    short_feedback?: string
+    follow_up_needed?: boolean
+  }
+  current_question?: JobAgentQuestionRaw | null
+  next_question?: JobAgentQuestionRaw | null
+  progress?: JobAgentProgressRaw
+  session_summary?: {
+    total_questions?: number
+    answered_count?: number
+    average_score?: number
+    topics?: unknown
+    completed?: boolean
+  } | null
+  memory_update?: InterviewAnswerResultView['memoryUpdate']
+}
+
+type JobAgentErrorPayload = {
+  detail?: {
+    message?: string
+  }
+}
+
+type ApplicationsLookupBuilder = {
+  select: (columns: string) => {
+    eq: (column: string, value: string) => {
+      eq: (column: string, value: string) => {
+        maybeSingle: () => Promise<{
+          data: OwnedApplication | null
+          error: unknown
+        }>
+      }
+    }
+  }
+}
+
+type ApplicationEventsSelectBuilder = {
+  select: (columns: string) => {
+    eq: (column: string, value: string) => {
+      order: (
+        column: string,
+        options: { ascending: boolean },
+      ) => {
+        limit: (count: number) => Promise<{
+          data: Array<{ id: string; remark: string | null }> | null
+          error: unknown
+        }>
+      }
+    }
+  }
+}
+
+type ApplicationEventsUpdateBuilder = {
+  update: (payload: { remark: string }) => {
+    eq: (column: string, value: string) => Promise<{ error: unknown }>
+  }
+}
+
+type SupabaseLike = {
+  from: (table: string) => unknown
+}
+
+function toQuestionView(raw: JobAgentQuestionRaw): InterviewQuestionView {
   return {
     id: raw.id,
     topic: raw.topic ?? 'unknown',
@@ -26,7 +137,7 @@ function toQuestionView(raw: any): InterviewQuestionView {
   }
 }
 
-function toProgressView(raw: any) {
+function toProgressView(raw?: JobAgentProgressRaw) {
   return {
     currentIndex: Number(raw?.current_index ?? 0),
     answeredCount: Number(raw?.answered_count ?? 0),
@@ -36,12 +147,15 @@ function toProgressView(raw: any) {
 }
 
 export async function readOwnedApplicationForInterview(
-  supabase: any,
+  supabase: unknown,
   userId: string,
   applicationId: string,
 ): Promise<OwnedApplication | null> {
-  const { data, error } = await supabase
-    .from('applications')
+  const applicationsTable = (supabase as SupabaseLike).from(
+    'applications',
+  ) as ApplicationsLookupBuilder
+
+  const { data, error } = await applicationsTable
     .select('id, user_id, company_name, job_title')
     .eq('id', applicationId)
     .eq('user_id', userId)
@@ -67,12 +181,13 @@ export async function fetchJobAgentJson<T>(
     cache: 'no-store',
   })
 
-  const payload = await response.json()
+  const payload: JobAgentErrorPayload | T = await response.json()
 
   if (!response.ok) {
+    const errorPayload = payload as JobAgentErrorPayload
     const message =
-      typeof payload?.detail?.message === 'string'
-        ? payload.detail.message
+      typeof errorPayload.detail?.message === 'string'
+        ? errorPayload.detail.message
         : 'JOBAGENT_REQUEST_FAILED'
     throw new Error(message)
   }
@@ -80,7 +195,7 @@ export async function fetchJobAgentJson<T>(
   return payload as T
 }
 
-export function mapJobAgentSession(raw: any): InterviewSessionView {
+export function mapJobAgentSession(raw: JobAgentSessionRaw): InterviewSessionView {
   return {
     sessionId: raw.session_id,
     applicationId: raw.application_id,
@@ -91,7 +206,7 @@ export function mapJobAgentSession(raw: any): InterviewSessionView {
     completed: Boolean(raw.completed),
     researchSummary: raw.research_summary ?? {},
     turns: Array.isArray(raw.turns)
-      ? raw.turns.map((turn: any) => ({
+      ? raw.turns.map((turn) => ({
           questionId: turn.question_id,
           answer: turn.answer,
           score: Number(turn.score ?? 0),
@@ -114,7 +229,9 @@ export function mapJobAgentSession(raw: any): InterviewSessionView {
   }
 }
 
-export function mapJobAgentAnswerResult(raw: any): InterviewAnswerResultView {
+export function mapJobAgentAnswerResult(
+  raw: JobAgentAnswerRaw,
+): InterviewAnswerResultView {
   return {
     decision: raw.decision,
     evaluation: {
@@ -187,12 +304,15 @@ export function buildInterviewSummaryRemark(input: {
 }
 
 export async function appendInterviewSummaryToLatestRemark(input: {
-  supabase: any
+  supabase: unknown
   applicationId: string
   summary: string
 }) {
-  const { data, error } = await input.supabase
-    .from('application_events')
+  const applicationEventsTable = (input.supabase as SupabaseLike).from(
+    'application_events',
+  ) as ApplicationEventsSelectBuilder
+
+  const { data, error } = await applicationEventsTable
     .select('id, remark')
     .eq('application_id', input.applicationId)
     .order('happened_at', { ascending: false })
@@ -210,8 +330,11 @@ export async function appendInterviewSummaryToLatestRemark(input: {
     ? `${latest.remark.trim()}\n\n${input.summary}`
     : input.summary
 
-  const { error: updateError } = await input.supabase
-    .from('application_events')
+  const applicationEventsUpdateTable = (input.supabase as SupabaseLike).from(
+    'application_events',
+  ) as ApplicationEventsUpdateBuilder
+
+  const { error: updateError } = await applicationEventsUpdateTable
     .update({ remark: nextRemark })
     .eq('id', latest.id)
 
