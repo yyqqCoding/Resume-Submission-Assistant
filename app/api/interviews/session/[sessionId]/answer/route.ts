@@ -4,6 +4,7 @@ import {
   appendInterviewSummaryToLatestRemark,
   buildInterviewSummaryRemark,
   fetchJobAgentJson,
+  type JobAgentAnswerRaw,
   mapJobAgentAnswerResult,
   readOwnedApplicationForInterview,
 } from '@/lib/interviews/server'
@@ -47,7 +48,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: 'APPLICATION_NOT_FOUND' }, { status: 404 })
     }
 
-    const rawResult = await fetchJobAgentJson<any>(
+    const rawResult = await fetchJobAgentJson<JobAgentAnswerRaw>(
       `/api/interview-sessions/${sessionId}/answers`,
       {
         method: 'POST',

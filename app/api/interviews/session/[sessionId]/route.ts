@@ -1,6 +1,10 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { fetchJobAgentJson, mapJobAgentSession } from '@/lib/interviews/server'
+import {
+  fetchJobAgentJson,
+  type JobAgentSessionRaw,
+  mapJobAgentSession,
+} from '@/lib/interviews/server'
 
 type RouteContext = {
   params: Promise<{ sessionId: string }>
@@ -25,7 +29,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const rawSession = await fetchJobAgentJson<any>(
+    const rawSession = await fetchJobAgentJson<JobAgentSessionRaw>(
       `/api/interview-sessions/${sessionId}`,
       { method: 'GET' },
     )

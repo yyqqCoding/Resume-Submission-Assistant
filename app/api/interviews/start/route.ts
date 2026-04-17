@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import {
   fetchJobAgentJson,
+  type JobAgentSessionRaw,
   mapJobAgentSession,
   readOwnedApplicationForInterview,
 } from '@/lib/interviews/server'
@@ -44,16 +45,19 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const session = await fetchJobAgentJson<any>('/api/interview-sessions', {
-      method: 'POST',
-      body: JSON.stringify({
-        user_id: user.id,
-        application_id: application.id,
-        company: application.company_name,
-        role: application.job_title,
-        question_count: 3,
-      }),
-    })
+    const session = await fetchJobAgentJson<JobAgentSessionRaw>(
+      '/api/interview-sessions',
+      {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: user.id,
+          application_id: application.id,
+          company: application.company_name,
+          role: application.job_title,
+          question_count: 3,
+        }),
+      },
+    )
 
     return NextResponse.json(mapJobAgentSession(session))
   } catch (jobAgentError) {
