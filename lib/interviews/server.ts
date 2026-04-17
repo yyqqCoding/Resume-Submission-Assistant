@@ -143,3 +143,87 @@ export function mapJobAgentAnswerResult(raw: any): InterviewAnswerResultView {
     },
   }
 }
+
+export function buildInterviewSummaryRemark(input: {
+  company: string
+  role: string
+  sessionSummary: {
+    totalQuestions: number
+    answeredCount: number
+    averageScore: number
+    topics: string[]
+  } | null
+  memoryUpdate: {
+    classification?: string
+    topicUpdates?: Array<{ topic: string }>
+  } | null
+  evaluation: {
+    shortFeedback: string
+  }
+}) {
+  const topics = input.sessionSummary?.topics ?? []
+  const memoryTopics = input.memoryUpdate?.topicUpdates ?? []
+
+  return [
+    '## 模拟面试总结（AI）',
+    `- 公司：${input.company}`,
+    `- 岗位：${input.role}`,
+    `- 总题数：${input.sessionSummary?.totalQuestions ?? 0}`,
+    `- 已完成：${input.sessionSummary?.answeredCount ?? 0}`,
+    `- 平均分：${input.sessionSummary?.averageScore ?? 0}`,
+    '',
+    '### 题目主题',
+    ...(topics.length ? topics.map((topic) => `- ${topic}`) : ['- 暂无主题']),
+    '',
+    '### 记忆沉淀',
+    `- 分类：${input.memoryUpdate?.classification ?? 'unknown'}`,
+    ...(memoryTopics.length
+      ? memoryTopics.map((item) => `- ${item.topic}`)
+      : ['- 暂无主题沉淀']),
+    '',
+    '### AI总结',
+    `- ${input.evaluation.shortFeedback || '本轮已完成模拟面试。'}`,
+  ].join('\n')
+}
+
+export async function appendInterviewSummaryToLatestRemark(input: {
+  supabase: any
+  applicationId: string
+  summary: string
+}) {
+  const { data, error } = await input.supabase
+    .from('application_events')
+    .select('id, remark')
+    .eq('application_id', input.applicationId)
+    .order('happened_at', { ascending: false })
+    .limit(1)
+
+  if (error || !data?.length) {
+    return {
+      status: 'failed' as const,
+      message: '模拟面试已完成，但同步投递记录失败',
+    }
+  }
+
+  const latest = data[0]
+  const nextRemark = latest.remark
+    ? `${latest.remark.trim()}\n\n${input.summary}`
+    : input.summary
+
+  const { error: updateError } = await input.supabase
+    .from('application_events')
+    .update({ remark: nextRemark })
+    .eq('id', latest.id)
+
+  if (updateError) {
+    return {
+      status: 'failed' as const,
+      message: '模拟面试已完成，但同步投递记录失败',
+    }
+  }
+
+  return {
+    status: 'success' as const,
+    message: '已同步到当前投递面试记录',
+  }
+}
