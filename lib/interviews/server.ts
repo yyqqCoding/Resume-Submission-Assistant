@@ -146,6 +146,45 @@ function toProgressView(raw?: JobAgentProgressRaw) {
   }
 }
 
+function toSessionSummaryView(
+  raw?:
+    | JobAgentSessionRaw['session_summary']
+    | JobAgentAnswerRaw['session_summary']
+    | null,
+) {
+  if (!raw) {
+    return null
+  }
+
+  return {
+    totalQuestions: Number(raw.total_questions ?? 0),
+    answeredCount: Number(raw.answered_count ?? 0),
+    averageScore: Number(raw.average_score ?? 0),
+    topics: Array.isArray(raw.topics) ? raw.topics : [],
+    completed: Boolean(raw.completed),
+  }
+}
+
+function deriveCompletedProgress(
+  sessionSummary:
+    | ReturnType<typeof toSessionSummaryView>
+    | null,
+) {
+  if (!sessionSummary?.completed) {
+    return null
+  }
+
+  const answeredCount = sessionSummary.answeredCount
+  const totalQuestions = sessionSummary.totalQuestions
+
+  return {
+    currentIndex: Math.max(Math.min(answeredCount, totalQuestions) - 1, 0),
+    answeredCount,
+    totalQuestions,
+    completed: true,
+  }
+}
+
 export async function readOwnedApplicationForInterview(
   supabase: unknown,
   userId: string,
@@ -196,6 +235,8 @@ export async function fetchJobAgentJson<T>(
 }
 
 export function mapJobAgentSession(raw: JobAgentSessionRaw): InterviewSessionView {
+  const sessionSummary = toSessionSummaryView(raw.session_summary)
+
   return {
     sessionId: raw.session_id,
     applicationId: raw.application_id,
@@ -215,23 +256,18 @@ export function mapJobAgentSession(raw: JobAgentSessionRaw): InterviewSessionVie
           questionKind: turn.question_kind ?? 'primary',
         }))
       : [],
-    sessionSummary: raw.session_summary
-      ? {
-          totalQuestions: Number(raw.session_summary.total_questions ?? 0),
-          answeredCount: Number(raw.session_summary.answered_count ?? 0),
-          averageScore: Number(raw.session_summary.average_score ?? 0),
-          topics: Array.isArray(raw.session_summary.topics)
-            ? raw.session_summary.topics
-            : [],
-          completed: Boolean(raw.session_summary.completed),
-        }
-      : null,
+    sessionSummary,
   }
 }
 
 export function mapJobAgentAnswerResult(
   raw: JobAgentAnswerRaw,
 ): InterviewAnswerResultView {
+  const sessionSummary = toSessionSummaryView(raw.session_summary)
+  const progress = raw.progress
+    ? toProgressView(raw.progress)
+    : deriveCompletedProgress(sessionSummary) ?? toProgressView()
+
   return {
     decision: raw.decision,
     evaluation: {
@@ -241,18 +277,8 @@ export function mapJobAgentAnswerResult(
     },
     currentQuestion: raw.current_question ? toQuestionView(raw.current_question) : null,
     nextQuestion: raw.next_question ? toQuestionView(raw.next_question) : null,
-    progress: toProgressView(raw.progress),
-    sessionSummary: raw.session_summary
-      ? {
-          totalQuestions: Number(raw.session_summary.total_questions ?? 0),
-          answeredCount: Number(raw.session_summary.answered_count ?? 0),
-          averageScore: Number(raw.session_summary.average_score ?? 0),
-          topics: Array.isArray(raw.session_summary.topics)
-            ? raw.session_summary.topics
-            : [],
-          completed: Boolean(raw.session_summary.completed),
-        }
-      : null,
+    progress,
+    sessionSummary,
     memoryUpdate: raw.memory_update ?? null,
     remarkSync: {
       status: 'skipped',

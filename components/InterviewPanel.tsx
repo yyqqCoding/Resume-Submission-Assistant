@@ -39,6 +39,15 @@ export default function InterviewPanel({ app }: Props) {
     null,
   )
 
+  function resetPanel() {
+    window.localStorage.removeItem(getStorageKey(app.id))
+    setSession(null)
+    setLastResult(null)
+    setAnswer('')
+    setError('')
+    setStatus('idle')
+  }
+
   useEffect(() => {
     const storedSessionId = window.localStorage.getItem(getStorageKey(app.id))
 
@@ -49,6 +58,9 @@ export default function InterviewPanel({ app }: Props) {
     setStatus('restoring')
     void getInterviewSession(storedSessionId, app.id)
       .then((nextSession) => {
+        if (nextSession.completed) {
+          window.localStorage.removeItem(getStorageKey(app.id))
+        }
         setSession(nextSession)
         setStatus(nextSession.completed ? 'completed' : 'active')
       })
@@ -60,6 +72,7 @@ export default function InterviewPanel({ app }: Props) {
 
   async function handleStart() {
     setError('')
+    setLastResult(null)
     setStatus('starting')
 
     try {
@@ -117,7 +130,8 @@ export default function InterviewPanel({ app }: Props) {
         current
           ? {
               ...current,
-              currentQuestion: result.nextQuestion,
+              currentQuestion:
+                result.nextQuestion ?? result.currentQuestion ?? current.currentQuestion,
               progress: result.progress,
             }
           : current,
@@ -211,9 +225,26 @@ export default function InterviewPanel({ app }: Props) {
           <p className="font-medium text-slate-900">
             平均分 {session.sessionSummary?.averageScore ?? lastResult?.sessionSummary?.averageScore ?? 0}
           </p>
+          <p>
+            已完成 {session.sessionSummary?.answeredCount ?? session.progress.answeredCount} /{' '}
+            {session.sessionSummary?.totalQuestions ?? session.progress.totalQuestions}
+          </p>
           <p>题目主题：{(session.sessionSummary?.topics ?? []).join(' / ') || '暂无'}</p>
           <p>记忆分类：{lastResult?.memoryUpdate?.classification ?? 'unknown'}</p>
+          {lastResult?.memoryUpdate?.topicUpdates?.length ? (
+            <p>
+              记忆主题：
+              {lastResult.memoryUpdate.topicUpdates
+                .map((item) => item.topic)
+                .join(' / ')}
+            </p>
+          ) : null}
           {lastResult?.remarkSync?.message ? <p>{lastResult.remarkSync.message}</p> : null}
+          <div className="pt-2">
+            <Button type="button" variant="outline" onClick={resetPanel}>
+              重新开始模拟面试
+            </Button>
+          </div>
         </div>
       ) : null}
 
