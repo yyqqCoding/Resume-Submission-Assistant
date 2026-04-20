@@ -183,7 +183,7 @@ export default function LoginForm({
           placeholder="you@example.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="w-full"
+          className="w-full border-2 border-black rounded-xl bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[2px_2px_0_0_#000] focus-visible:translate-y-[2px] focus-visible:translate-x-[2px] transition-all"
         />
       </div>
 
@@ -197,7 +197,7 @@ export default function LoginForm({
           placeholder={isSignUp ? '请设置初始密码' : '请输入密码'}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full"
+          className="w-full border-2 border-black rounded-xl bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[2px_2px_0_0_#000] focus-visible:translate-y-[2px] focus-visible:translate-x-[2px] transition-all"
         />
       </div>
 
@@ -212,7 +212,7 @@ export default function LoginForm({
             placeholder="请再次输入密码"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
-            className="w-full"
+            className="w-full border-2 border-black rounded-xl bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[2px_2px_0_0_#000] focus-visible:translate-y-[2px] focus-visible:translate-x-[2px] transition-all"
           />
         </div>
       ) : null}
@@ -221,7 +221,7 @@ export default function LoginForm({
         <p
           role="alert"
           aria-live="assertive"
-          className="rounded-[calc(var(--radius)+2px)] bg-red-50 px-4 py-3 text-sm text-red-600"
+          className="rounded-xl border-2 border-black bg-red-100 px-4 py-3 text-sm font-bold text-black shadow-[4px_4px_0_0_#000]"
         >
           {message.text}
         </p>
@@ -230,7 +230,7 @@ export default function LoginForm({
       <Button
         type="submit"
         disabled={controlsDisabled}
-        className="w-full"
+        className="w-full border-2 border-black bg-white text-black font-black shadow-[4px_4px_0_0_#000] hover:bg-[#ffeabe] active:shadow-none active:translate-y-[4px] active:translate-x-[4px] transition-all rounded-xl"
       >
         {submitLabel}
       </Button>
@@ -243,7 +243,7 @@ export default function LoginForm({
           size="sm"
           disabled={controlsDisabled}
           onClick={handleModeSwitch}
-          className="h-auto px-0 text-emerald-800 hover:bg-transparent hover:text-emerald-700"
+          className="h-auto px-4 py-2 border-2 border-black bg-white text-black font-bold shadow-[2px_2px_0_0_#000] hover:bg-[#ffeabe] hover:text-black active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all rounded-lg"
         >
           {isSignUp ? '去登录' : '去注册'}
         </Button>
@@ -257,10 +257,10 @@ export default function LoginForm({
           }
         }}
       >
-        <DialogContent showCloseButton={false}>
+        <DialogContent showCloseButton={false} className="border-4 border-black shadow-[8px_8px_0_0_#000] rounded-2xl sm:rounded-2xl bg-white">
           <DialogHeader>
-            <DialogTitle>完成邮箱确认</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="font-black text-xl">完成邮箱确认</DialogTitle>
+            <DialogDescription className="font-semibold text-black mt-2 text-base">
               {SIGN_UP_CONFIRMATION_MESSAGE}
             </DialogDescription>
           </DialogHeader>
@@ -268,7 +268,7 @@ export default function LoginForm({
             <Button
               type="button"
               onClick={handleRegistrationAcknowledged}
-              className="rounded-full"
+              className="w-full border-2 border-black bg-white text-black font-black shadow-[4px_4px_0_0_#000] hover:bg-[#ffeabe] active:shadow-none active:translate-y-[4px] active:translate-x-[4px] transition-all rounded-xl"
             >
               我知道了，去登录
             </Button>

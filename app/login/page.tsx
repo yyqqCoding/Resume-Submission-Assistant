@@ -5,47 +5,47 @@ export default function LoginPage() {
   const siteUrl = getSiteUrl()
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-10">
-      <section className="w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/60 bg-[rgba(255,255,255,0.5)] shadow-[0_30px_120px_rgba(15,23,42,0.08)] backdrop-blur">
+    <main className="flex min-h-screen items-center justify-center px-4 py-10 bg-white text-black">
+      <section className="w-full max-w-5xl overflow-hidden rounded-[2rem] border-4 border-black bg-white shadow-[8px_8px_0_0_#000]">
         <div className="grid min-h-[42rem] lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="flex flex-col justify-between bg-[linear-gradient(180deg,rgba(20,83,45,0.94),rgba(6,78,59,0.94))] p-8 text-white sm:p-10">
+          <div className="flex flex-col justify-between bg-white border-b-4 lg:border-b-0 lg:border-r-4 border-black p-8 text-black sm:p-10">
             <div className="space-y-5">
               <div className="space-y-4">
-                <h1 className="max-w-md text-4xl font-semibold leading-tight sm:text-5xl">
+                <h1 className="max-w-md text-4xl font-black leading-tight tracking-tight sm:text-5xl">
                   简历投递追踪器
                 </h1>
-                <p className="max-w-md text-sm leading-7 text-emerald-50/80 sm:text-base">
+                <p className="max-w-md text-sm leading-7 text-black font-semibold sm:text-base">
                   集中记录每一次投递、面试进展和跟进动作，让机会、节奏与反馈都更清晰。
                 </p>
               </div>
             </div>
 
-            <div className="grid gap-3 text-sm text-emerald-50/85 sm:grid-cols-2">
-              <div className="rounded-3xl border border-white/10 bg-white/10 p-4">
-                <p className="font-medium">投递记录</p>
-                <p className="mt-2 text-xs leading-6 text-emerald-50/70">
+            <div className="grid gap-4 text-sm text-black sm:grid-cols-2">
+              <div className="rounded-2xl border-4 border-black bg-white p-5 shadow-[4px_4px_0_0_#000]">
+                <p className="font-black text-lg">投递记录</p>
+                <p className="mt-2 text-xs leading-6 font-semibold">
                   统一维护公司、岗位、来源链接与备注信息。
                 </p>
               </div>
-              <div className="rounded-3xl border border-white/10 bg-white/10 p-4">
-                <p className="font-medium">进展跟进</p>
-                <p className="mt-2 text-xs leading-6 text-emerald-50/70">
+              <div className="rounded-2xl border-4 border-black bg-white p-5 shadow-[4px_4px_0_0_#000]">
+                <p className="font-black text-lg">进展跟进</p>
+                <p className="mt-2 text-xs leading-6 font-semibold">
                   随时更新阶段变化，补充最新反馈与后续动作。
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center justify-center p-6 sm:p-10">
-            <div className="w-full max-w-md rounded-[1.75rem] border border-slate-200/70 bg-[var(--card)] p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-8">
+          <div className="flex items-center justify-center bg-white p-6 sm:p-10">
+            <div className="w-full max-w-md rounded-2xl border-4 border-black bg-white p-6 shadow-[6px_6px_0_0_#000] sm:p-8">
               <div className="mb-6 space-y-2">
-                <p className="text-sm font-medium uppercase tracking-[0.22em] text-slate-400">
+                <p className="text-sm font-black uppercase tracking-[0.22em] text-black">
                   欢迎回来
                 </p>
-                <h2 className="text-3xl font-semibold text-slate-900">
+                <h2 className="text-3xl font-black text-black">
                   登录或创建账号
                 </h2>
-                <p className="text-sm leading-6 text-slate-500">
+                <p className="text-sm leading-6 text-black font-semibold mt-2">
                   使用邮箱登录，或先注册新账号开始管理你的投递记录。
                 </p>
               </div>
