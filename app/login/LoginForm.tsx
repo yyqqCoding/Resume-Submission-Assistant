@@ -183,7 +183,7 @@ export default function LoginForm({
           placeholder="you@example.com"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          className="w-full border-2 border-black rounded-xl bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[2px_2px_0_0_#000] focus-visible:translate-y-[2px] focus-visible:translate-x-[2px] transition-all"
+          className="w-full border-2 border-black rounded-[1.25rem] bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[1px_1px_0_0_#000] focus-visible:translate-y-[3px] focus-visible:translate-x-[3px] transition-all duration-300"
         />
       </div>
 
@@ -197,7 +197,7 @@ export default function LoginForm({
           placeholder={isSignUp ? '请设置初始密码' : '请输入密码'}
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full border-2 border-black rounded-xl bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[2px_2px_0_0_#000] focus-visible:translate-y-[2px] focus-visible:translate-x-[2px] transition-all"
+          className="w-full border-2 border-black rounded-[1.25rem] bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[1px_1px_0_0_#000] focus-visible:translate-y-[3px] focus-visible:translate-x-[3px] transition-all duration-300"
         />
       </div>
 
@@ -212,7 +212,7 @@ export default function LoginForm({
             placeholder="请再次输入密码"
             value={confirmPassword}
             onChange={(event) => setConfirmPassword(event.target.value)}
-            className="w-full border-2 border-black rounded-xl bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[2px_2px_0_0_#000] focus-visible:translate-y-[2px] focus-visible:translate-x-[2px] transition-all"
+            className="w-full border-2 border-black rounded-[1.25rem] bg-white shadow-[4px_4px_0_0_#000] focus-visible:ring-0 focus-visible:shadow-[1px_1px_0_0_#000] focus-visible:translate-y-[3px] focus-visible:translate-x-[3px] transition-all duration-300"
           />
         </div>
       ) : null}
@@ -221,7 +221,7 @@ export default function LoginForm({
         <p
           role="alert"
           aria-live="assertive"
-          className="rounded-xl border-2 border-black bg-red-100 px-4 py-3 text-sm font-bold text-black shadow-[4px_4px_0_0_#000]"
+          className="rounded-[1.25rem] border-2 border-black bg-red-100 px-4 py-3 text-sm font-bold text-black shadow-[4px_4px_0_0_#000] animate-in slide-in-from-top-2"
         >
           {message.text}
         </p>
@@ -230,7 +230,7 @@ export default function LoginForm({
       <Button
         type="submit"
         disabled={controlsDisabled}
-        className="w-full border-2 border-black bg-white text-black font-black shadow-[4px_4px_0_0_#000] hover:bg-[#ffeabe] active:shadow-none active:translate-y-[4px] active:translate-x-[4px] transition-all rounded-xl"
+        className="w-full border-[3px] border-black bg-white text-black font-black shadow-[4px_4px_0_0_#000] hover:bg-[#ffeabe] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:shadow-none active:translate-y-[4px] active:translate-x-[4px] transition-all duration-300 rounded-[1.25rem]"
       >
         {submitLabel}
       </Button>
@@ -243,7 +243,7 @@ export default function LoginForm({
           size="sm"
           disabled={controlsDisabled}
           onClick={handleModeSwitch}
-          className="h-auto px-4 py-2 border-2 border-black bg-white text-black font-bold shadow-[2px_2px_0_0_#000] hover:bg-[#ffeabe] hover:text-black active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all rounded-lg"
+          className="h-auto px-5 py-2 border-2 border-black bg-white text-black font-bold shadow-[2px_2px_0_0_#000] hover:bg-[#ffeabe] hover:text-black hover:-translate-y-1 hover:shadow-[4px_4px_0_0_#000] active:shadow-none active:translate-y-[2px] active:translate-x-[2px] transition-all duration-300 rounded-[1rem]"
         >
           {isSignUp ? '去登录' : '去注册'}
         </Button>
@@ -257,7 +257,7 @@ export default function LoginForm({
           }
         }}
       >
-        <DialogContent showCloseButton={false} className="border-4 border-black shadow-[8px_8px_0_0_#000] rounded-2xl sm:rounded-2xl bg-white">
+        <DialogContent showCloseButton={false} className="border-4 border-black shadow-[8px_8px_0_0_#000] rounded-[2rem] sm:rounded-[2rem] bg-white">
           <DialogHeader>
             <DialogTitle className="font-black text-xl">完成邮箱确认</DialogTitle>
             <DialogDescription className="font-semibold text-black mt-2 text-base">
@@ -268,7 +268,7 @@ export default function LoginForm({
             <Button
               type="button"
               onClick={handleRegistrationAcknowledged}
-              className="w-full border-2 border-black bg-white text-black font-black shadow-[4px_4px_0_0_#000] hover:bg-[#ffeabe] active:shadow-none active:translate-y-[4px] active:translate-x-[4px] transition-all rounded-xl"
+              className="w-full border-[3px] border-black bg-white text-black font-black shadow-[4px_4px_0_0_#000] hover:bg-[#ffeabe] hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#000] active:shadow-none active:translate-y-[4px] active:translate-x-[4px] transition-all duration-300 rounded-[1.25rem]"
             >
               我知道了，去登录
             </Button>
