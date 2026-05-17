@@ -1,5 +1,15 @@
-import { redirect } from 'next/navigation'
+import LandingHeader from '@/components/landing/LandingHeader'
+import LandingHero from '@/components/landing/LandingHero'
+import FeatureGrid from '@/components/landing/FeatureGrid'
 
 export default function HomePage() {
-  redirect('/applications')
+  return (
+    <div className="min-h-screen">
+      <LandingHeader />
+      <main>
+        <LandingHero />
+        <FeatureGrid />
+      </main>
+    </div>
+  )
 }

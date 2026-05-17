@@ -37,13 +37,14 @@ export async function middleware(request: NextRequest) {
 
   const pathname = request.nextUrl.pathname
   const isLoginPage = pathname === '/login'
-  const isProtectedPath = pathname === '/' || pathname.startsWith('/applications')
+  const isLandingPage = pathname === '/'
+  const isProtectedPath = pathname.startsWith('/applications')
 
   if (!user && isProtectedPath) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  if (user && isLoginPage) {
+  if (user && (isLoginPage || isLandingPage)) {
     return NextResponse.redirect(new URL('/applications', request.url))
   }
 
